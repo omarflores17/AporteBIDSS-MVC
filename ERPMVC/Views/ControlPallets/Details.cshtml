@@ -1,0 +1,131 @@
+﻿@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Detalle de Salida";
+}
+
+
+
+<script>
+
+
+
+    function GetControlPalletsId() {
+        return { ControlPalletsId: $("#ControlPalletsId").val() }
+    }
+</script>
+
+
+<div id="controlpallets">
+    @await Html.PartialAsync("pvwControlPallets", new ERPMVC.DTO.ControlPalletsDTO { ControlPalletsId = 0, DocumentDate = DateTime.Now
+    , BranchId = Convert.ToInt64(Context.Session.GetString("BranchId")) })
+</div>
+
+@section scripts{
+    <script>
+      function SaveCustomer() {
+
+          //console.log($("#ClienteRecoger").val());
+          //console.log($("#EnviarlaMensajero").val());
+
+
+          //$("#btnGuardarCliente").hide();
+          $("#btnGuardarCliente").prop("disabled", true);
+
+          var dataObject = {
+              'CustomerId': $("#CustomerId").val(),
+              'CustomerName': $("#CustomerName").val(),
+              'RTN': $("#RTN").val(),
+              'CustomerTypeId': $("#CustomerTypeId").val() == null ? 0 : $("#CustomerTypeId").val(),
+              'Address': $("#Address").val(),
+              'City': $("#City").val(),
+              'State': $("#State").val(),
+              'ZipCode': $("#ZipCode").val() == null ? 0 : $("#ZipCode").val(),
+              'Phone': $("#Phone").val(),
+              'Identidad': $("#Identidad").val(),
+              'Email': $("#Email").val(),
+              'ContactPerson': $("#ContactPerson").val(),
+              'IdEstado': $("#IdEstadoCliente").val(),
+              'Estado': $("#IdEstadoCliente").data("kendoDropDownList").text(),
+              'GrupoEconomico': $("#GrupoEconomico").val(),
+              'MontoActivos': $("#MontoActivos").val(),
+              'MontoIngresosAnuales': $("#MontoIngresosAnuales").val(),
+              'Proveedor1': $("#Proveedor1").val(),
+              'Proveedor2': $("#Proveedor2").val(),
+              'ClienteRecoger': $("#ClienteRecoger").is(':checked'),
+              'EnviarlaMensajero': $("#EnviarlaMensajero").is(':checked'),
+              'ConfirmacionCorreo': $("#ConfirmacionCorreo").is(':checked'),
+              'DireccionEnvio': $("#DireccionEnvio").val(),
+              'PerteneceEmpresa': $("#PerteneceEmpresa").val(),
+
+
+          };
+
+      //    console.log(dataObject);
+
+           $.ajax({
+                url: '@Url.Action("SaveCustomer", "Customer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#CustomerId").val(data.CustomerId);
+
+                    swal("Cliente", "Se han Guardado los cambios", "success");
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                    $("#btnGuardarCliente").show();
+                    $("#btnGuardarCliente").prop("disabled", false);
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+
+
+      }
+    </script>
+}
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>
+
+
+
+<div class="container-fluid">
+
+</div>

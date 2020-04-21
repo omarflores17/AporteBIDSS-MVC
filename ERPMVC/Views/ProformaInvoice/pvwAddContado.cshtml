@@ -1,0 +1,251 @@
+﻿@model ERPMVC.Models.ProformaInvoice
+@addTagHelper *, Kendo.Mvc
+@{Layout = null;
+    var messages = new Dictionary<string, string>() {
+        {"required","Valor requerido" }
+    };
+
+}
+<script>
+    //Limpia la variable de session
+     function clearsession() {
+            var dataObject = ["listadoproductos"];
+                $.ajax({
+                   url: '@Url.Action("ClearSession","Common")',
+                   method: 'POST',
+                   datatype: "json",
+                   contentType: 'application/json',
+                   async: false,
+                   data: JSON.stringify(dataObject),
+                   success: function (result) {
+                         //  $('#myModalSalesOrder').modal('show');
+                   },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                           alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+           }
+
+</script>
+
+
+<div class="card card-outline-inverse">
+    <div class="card-header">
+        <h3 class="m-b-0 text-white">Facturas al Contado</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="frmUnitOfMeasure" kendo-validator="true" kendo-messages="messages"
+                              data-ajax="true"
+                              data-ajax-method="post"
+                              method="post" class="validation-wizard wizard-circle">
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="OrderDate" class="control-label" style="width: 100%;">Fecha</label>
+                                    <kendo-datetimepicker name="OrderDate"
+                                                          style="width: 100%;"
+                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                          time-format="hh:mm:ss"
+                                                          onchange="Calcularfecha();" id="OrderDate"
+                                                          data-val-required="La fecha es requerida"
+                                                          value="Model.OrderDate" />
+                                    <span asp-validation-for="OrderDate" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="BranchId" class="control-label">Sucursal</label>
+                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        datatextfield="BranchName"
+                                                        enable="false"
+                                                        datavaluefield="BranchId"
+                                                        required
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                            <transport>
+                                                <read url="@Url.Action("Get", "Branch")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="CustomerId" class="control-label" style="width:100%">Cliente</label>
+                                    <div class="input-group">
+                                        <kendo-dropdownlist name="CustomerId" id="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione el cliente"
+                                                            datatextfield="CustomerName"
+                                                            datavaluefield="CustomerId"
+                                                            class="form-control-line"
+                                                            onchange="SetCustomerName();"
+                                                            required data-required-msg="El Cliente es Requerido."
+                                                            style="width: 80%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCustomerConcatenado", "Customer")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-info" id="btnCustomer" onclick="AddCustomer()" type="button"><span class="	glyphicon glyphicon-plus"></span> Añadir</button>
+                                        </span>
+
+                                    </div>
+                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                </div>
+                            </div>
+
+
+                                <div class="col-sm-3 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="RTN" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="RTN" readonly required class="form-control required " style="min-width: 100%" onKeyPress="return soloNumeros(event)" />
+                                        <span asp-validation-for="RTN" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Correo" class="control-label" style="width:100%"></label>
+
+                                        <input type="text" asp-for="Correo" class="form-control" readonly maxlength="50" style="min-width: 100%" />
+
+                                        <span asp-validation-for="Correo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Tefono" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="Tefono" readonly name="Tefono" class="form-control required " style="min-width: 100%" onKeyPress="return soloNumeros(event)" />
+                                        <span asp-validation-for="Tefono" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+
+
+                            <div id="ContadoDetail">
+                                @await Html.PartialAsync("pvwContadoDetalle", new ERPMVC.Models.ProformaInvoiceLine { ProformaLineId = 0, ProformaInvoiceId = Model.ProformaId })
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" id="btnGuardar" class="btn btn-success" onclick="GuardarContado(this);">Guardar</button>
+                                <a asp-action="Index" id="btncerrar" class="btn btn-default">Cerrar</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="NumBranch">
+                        @await Html.PartialAsync("pvwAddModalCustomer", new ERPMVC.Models.Customer { CustomerId = 0 })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+      function AddCustomer() {
+         var dataObject = {
+            CustomerId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddModalCustomer", "ProformaInvoice")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#NumBranch").html('');
+                $("#NumBranch").html(result);
+                $('#ModalCliente').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+      
+    }
+
+     //validar espacios
+        function validarEspacios() {
+            //Funcion no aceptar espacios en el textbox
+            document.addEventListener("input", function () {
+                $("input[type='text']", 'form').each(function () {
+                    _id = $(this).attr("id");
+                    _value = document.getElementById(_id).value;
+                    document.getElementById(_id).value = _value.trimStart();
+                });
+            })
+    }
+
+       function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+    $(document).ready(function () {
+        $("#Tefono").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+        debugger
+        $("#RTN").kendoMaskedTextBox({
+            mask: "0000-0000-000000"
+        });
+    });
+
+    //para guardar registro
+    function GuardarContado(e) {
+
+        debugger
+        var validadetalle = true;
+            var displayedData = $("#gridContadoDetail").data().kendoGrid.dataSource.view();
+            for (var i = 0; i < displayedData.length; i++) {
+                displayedData[i].ProformaLineId = 0;
+            }
+        if (validadetalle) {
+            var dataObject = {
+                 'ProformaId': $("#ProformaId").val() === "" ? "0" : $("#ProformaId").val(),
+                 'BranchId': $("#BranchId").val(),
+                 'CustomerId': $("#CustomerId").val(),
+                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                 
+               
+            };
+            console.log("Campos", dataObject);
+            $.ajax({
+                url: '@Url.Action("SaveProformaInvoice", "ProformaInvoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    swal("Factura", "Se ha registrado la factura", "success");
+                    $('#UoModal').modal('hide');
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                            //Cierras tu ventana
+                        }
+                    }, false);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    
+                    swal("Error", "Ha ocurrido un error al guardar los cambios" + textStatus, "error");
+                }
+            });
+        }
+    }
+
+
+    
+</script>

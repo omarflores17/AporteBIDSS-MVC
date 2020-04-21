@@ -1,0 +1,46 @@
+﻿@model ERPMVC.Models.LoginViewModel
+@{
+    Layout = "~/Views/Shared/_Layoutlogin.cshtml";
+    ViewData["Title"] = "Login";
+}
+
+
+
+<form asp-controller="Account" asp-action="Login" class="form-horizontal form-material" id="loginform">
+    <a href="javascript:void(0)" class="text-center db"><img src="~/assets/images/logo-icon.png" alt="Home" /><br /><img src="~/assets/images/logo-text.png" alt="Home" /></a>
+    <div class="form-group m-t-40">
+        <div class="col-xs-12">
+            <input class="form-control" id="Email" asp-for="@Model.Email" type="text" placeholder="Login..." required="">
+
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-12">
+            <input class="form-control" id="Password" asp-for="@Model.Password" type="password" placeholder="Password..." required="">
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-md-12">
+            <div class="checkbox checkbox-primary pull-left p-t-0">
+                <input id="checkbox-signup" type="checkbox" class="filled-in chk-col-light-blue">
+                <label for="checkbox-signup"> Recuerdame </label>
+            </div>
+            <a href="#" id="to-recover" class="text-dark pull-right"><i class="fa fa-lock m-r-5"></i> Olvido su Contraseña?</a>
+        </div>
+    </div>
+    <div class="form-group text-center m-t-20">
+        <div class="col-xs-12">
+            <button class="btn btn-info btn-lg btn-block text-uppercase btn-rounded" type="submit" tabindex="0" value="default action">Entrar</button>
+        </div>
+    </div>
+
+
+</form>
+<br />
+@if (Model != null)
+{
+    if (Model.Failed)
+    {
+        <div class="alert alert-danger">Ingrese un usuario y password correctos </div>
+    }
+}

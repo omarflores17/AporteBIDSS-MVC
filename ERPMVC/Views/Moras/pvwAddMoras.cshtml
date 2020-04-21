@@ -1,0 +1,249 @@
+﻿@model ERPMVC.DTO.MorasDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Requerido" },
+                    {"required","Valor requerido" }
+                };    
+}
+
+<script>
+    function ValidarDias() {
+        debugger;
+        var max = document.getElementById("MaxDias").value;
+        var min = document.getElementById("MinDias").value;
+
+        if (min > max) {
+
+            alert("El mínimo de días no debe ser mayor que el máximo de días");
+            $('#MinDias').val('');
+        }
+    }
+</script>
+
+
+<div id="ModalMoras" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="title">Reglas Moratorias</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="frmMoras" kendo-validator="true"  kendo-messages="messages"
+                      data-ajax="true"
+                      data-ajax-method="post"
+                      data-ajax-begin="SaveMoras"
+                      class="validation-wizard wizard-circle">
+                    <div class="form-body">
+
+                        <div class="row">
+                            <div class="col-md-12" hidden>
+                                <div class="form-group">
+                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                    <input type="text" asp-for="Id" name="MorasId" class="form-control" disabled="disabled" style="width:100%" onchange="PrevenirCambios()" />
+                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Nombre" class=" control-label" style="width:100%"></label>
+                                    <input type="text" asp-for="Nombre" name="Nombre" class="form-control" maxlength="50" autocomplete="off" style="width:100%" onchange="PrevenirCambios()" required data-required-msg="El Nombre es requerido." />
+                                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="MaxDias" class=" control-label" style="width:100%"></label>
+                                    <input asp-for="MaxDias" type="number" name="MaxDias" id="MaxDias" min="0" onKeyPress="if(this.value.length==5) return false;" autocomplete="off" class="form-control" style="min-width:100%" required onchange="ValidarDias()"  data-required-msg="El Máximo de días es requerido." />
+                                    <span asp-validation-for="MaxDias" class="text-danger"></span>
+
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="MinDias" class=" control-label" style="width:100%"></label>
+                                    <input type="number" asp-for="MinDias" name="MinDias" min="0" id="MinDias" class="form-control"  onKeyPress="if(this.value.length==5) return false;" autocomplete="off" style="width:100%" required onchange="ValidarDias()" data-required-msg="El Mínimo de días es requerido." />
+                                    <span asp-validation-for="MinDias" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Intereses" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="Intereses"
+                                                          format="#.## '%'"
+                                                          min="0"
+                                                          decimals="2"
+                                                          max="100"
+                                                          required data-required-msg="El Interes es requerido."
+                                                          style="width:100%"
+                                                          value="Model.Intereses" />
+                                    <span asp-validation-for="Intereses" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Estado" class="control-label"></label>
+                                    <kendo-dropdownlist name="Estado"
+                                                        for="@Model.Estado"
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Seleccionar Estado"
+                                                        datatextfield="NombreEstado"
+                                                        datavaluefield="IdEstado"
+                                                        required data-required-msg="El Estado es requerido."
+                                                        style="width: 100%;" onchange="PrevenirCambios()">
+                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                            <transport>
+                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="Estado" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class=" col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="Requerido" class="control-label" style="width: 100%;">¿Es obligatorio?</label>
+                                    @(Html.Kendo().SwitchFor(m => m.Requerido)
+                                               .Name("Requerido").Messages(c => c.Checked("SI").Unchecked("NO"))
+                                               .Events(ev => ev.Change("onChange"))
+                                    )
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">                        
+                        <button id="btnMoras" class="btn btn-success" type="button" onclick="SaveMoras()"> Guardar </button>
+                        <button type="button" class="btn btn-default" name="close"  onclick="CerrarModal()">Cerrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        debugger;
+        if ($('#Requerido').is(':checked')) {            $("#Requerido").val(true);        }
+        else {
+            $("#Requerido").val(false);
+        }
+
+    });
+    function onChange(e) {
+        debugger;
+        console.log(e.checked);//true of false
+        if (e.checked) {
+            $("#Requerido").val(true);
+        }
+        else {
+
+            $("#Requerido").val(false);
+        }
+    }
+   
+   
+    //validar si hay datos en los campos cuando cierra el modeal, y validar espacios
+    var changes = false;
+
+    function PrevenirCambios() {
+        changes = true;
+        //convertir a mayuscula la descripcion
+        $("#Nombre").change(function () {
+            var str = $("#Nombre").val();
+            var res = str.toUpperCase();
+            $("#Nombre").val(res);
+            debugger
+        });
+      
+        
+    }
+    //cierra modal
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+                //closeOnConfirm: false
+            }, function () {
+                $('#ModalMoras').modal('hide');
+            });
+        } else {
+            $('#ModalMoras').modal('hide');
+        }
+    }
+ 
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionMoras").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveMoras(e) {
+        debugger;
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+       
+        
+          //  var displayedData = $("#gridNumeracionMoras").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+            'Nombre': $("#Nombre").val(),
+            'MaxDias': $("#MaxDias").val(),
+            'MinDias': $("#MinDias").val(),
+            'Estado': $("#Estado").val(),
+            'Intereses': $("#Intereses").val(),
+            'Requerido': $("#Requerido").val(),
+            
+            };
+
+           console.log('HEY', dataObject);
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmMoras").data("kendoValidator");
+                 var status = $(".status");
+        
+                if (validator.validate()) {
+                        $.ajax({
+                            url: '@Url.Action("SaveMoras", "Moras")',
+                            method: 'POST',
+                            datatype: "json",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(dataObject),
+                            success: function (data) {
+                                swal("Reglas moratorias","Almacenado con éxito","success");
+                                RefrescarGrid();
+                                $('#ModalMoras').modal('hide');
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                swal(textStatus + ": " + XMLHttpRequest.responseText);
+
+                            }
+                        });
+
+                }
+                else {
+                    status.text("Oops! Hay datos incorecctos en la data en el Formulario.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+       
+        $("#btnMoras").show();
+        $("#btnMoras").prop("disabled", false);
+    }
+</script>

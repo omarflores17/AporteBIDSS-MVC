@@ -1,0 +1,21 @@
+﻿
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Reporte de Mora por Tienda";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERPMVC.DTO.ContratoDTO
+
+
+<script>
+    function GetInvoiceId() {
+        return { ContratoId: $("#ContratoId").val() }
+    }
+</script>
+
+<div id="ContratoDetail">
+
+    @await Html.PartialAsync("Reporte_Mora_Tienda", new ERPMVC.DTO.ContratoDTO { ContratoId = 0 })
+</div>
+
+

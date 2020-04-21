@@ -1,0 +1,390 @@
+﻿
+<style>
+    a.my-class {
+        color: #080808;
+    }
+
+        a.my-class:active {
+            color: #666666
+        }
+
+        a.my-class:link {
+            color: #f6f6f6
+        }
+
+        a.my-class:visited {
+            color: #666666
+        }
+
+    a.dash {
+        color: #fca639;
+    }
+
+    a.my-dash:active {
+        color: #666666
+    }
+
+    a.my-dash:link {
+        color: #f6f6f6
+    }
+
+    a.my-dash:visited {
+        color: #FCFBFA
+    }
+</style>
+<div class="row">
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="Customer" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/cliente.png" alt="cliente" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Clientes
+                            <h2 class="m-t-0" id="cliente"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="ProformaInvoice" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/factura.png" alt="Factura" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Factura
+                            <h2 class="m-t-0" id="factura"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="Product" asp-action="Product">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/tienda-online.png" alt="Productos" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Producto
+                            <h2 class="m-t-0" id="producto"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="Vendor" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/proveedor.png" alt="Proveedores" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Proveedor
+                            <h2 class="m-t-0" id="proveedor"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="Employees" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/empleados.png" alt="Empleado" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Empleado
+                            <h2 class="m-t-0" id="empleado"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="SalesOrder" asp-action="Details">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/cotizacion.png" alt="Cotizacion" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                           Cotizaciones
+                            <h2 class="m-t-0" id="cotizacion"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="PurchaseOrder" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/compra.png" alt="Ordenes de compra" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                           Ordenes de Compra
+                            <h2 class="m-t-0" id="compra"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="InventoryTransfer" asp-action="Index">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/inventario.png" alt="Inventario" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Transacciones de Inventario
+                            <h2 class="m-t-0" id="entrada"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-4">
+        <a class="my-class" asp-controller="Branch" asp-action="Brach">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex no-block">
+                        <div class="m-r-20 align-self-center"><span class="lstick m-r-20"></span><img src="~/assets/images/sucursal.png" alt="Sucursal" /></div>
+                        <div class="align-self-center" style="color:dimgrey">
+                            Sucursales
+                            <h2 class="m-t-0" id="sucursal"></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@*<div class="card card-inverse">
+    <div class="card-header">
+
+    </div>
+
+    <div class="card-body">
+        @(Html.Kendo().Grid<ERPMVC.Models.Customer>()
+            .Name("grid")
+            .HtmlAttributes(new { style = "height:550px;" })
+            .Columns(columns =>
+            {
+                columns.Bound(e => e.Identidad).Title("Identidad");
+                columns.Bound(e => e.CustomerName).Title("Nombre");
+                columns.Bound(e => e.Phone).Title("Telefono");
+                columns.Bound(e => e.PerteneceEmpresa).Title("Saldo");
+                columns.Template(e => e).ClientTemplate(" ").Width(140).Title("Clasificacion")
+            })
+            .ClientRowTemplate(
+                "<tr data-uid='#: uid #'>" +
+                    "<td class='photo'>" +
+                       "<img src='" + Url.Content("~/Content/web/Employees/") + "#:data.EmployeeID#.jpg' alt='#: data.EmployeeID #' />" +
+                    "</td>" +
+                    "<td class='details'>" +
+                        "<span class='title'>#: Title #</span>" +
+                        "<span class='description'>Name : #: FirstName# #: LastName#</span>" +
+                        "<span class='description'>Country : #: Country# </span>" +
+                    "</td>" +
+                    "<td class='country'>#: Country #" +
+                        "</td>" +
+                    "<td class='employeeID'>" +
+                        "#: EmployeeID #" +
+                    "</td>" +
+                 "</tr>"
+            )
+            .ClientAltRowTemplate(
+                "<tr class='k-alt' data-uid='#: uid #'>" +
+                    "<td class='photo'>" +
+                        "<img src='" + Url.Content("~/Content/web/Employees/") + "#:data.EmployeeID#.jpg' alt='#: data.EmployeeID #' />" +
+                    "</td>" +
+                    "<td class='details'>" +
+                        "<span class='title'>alt #: Title #</span>" +
+                        "<span class='description'>alt Name : #: FirstName# #: LastName#</span>" +
+                        "<span class='description'>alt Country : #: Country# </span>" +
+                    "</td>" +
+                    "<td class='country'>#: Country #" +
+                        "</td>" +
+                    "<td class='employeeID'>" +
+                        "#: EmployeeID #" +
+                    "</td>" +
+                "</tr>"
+            )
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Read(read => read.Action("RowTemplate_Read", "Grid"))
+            )
+            .Scrollable()
+        )
+    </div>
+</div>*@
+
+<script>
+    $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("GetQuantityCustomers", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('cliente' +result);
+                //$("#cliente").text();
+                $("#cliente").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+        $.ajax({
+                url: '@Url.Action("GetQuantityInvoices", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('factura' +result);
+                //$("#cliente").text();
+                $("#factura").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+         $.ajax({
+                url: '@Url.Action("GetQuantitySalesOrders", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('cotizacion' +result);
+                //$("#cliente").text();
+                $("#cotizacion").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+         $.ajax({
+                url: '@Url.Action("GetQuantityProduct", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('producto' +result);
+                //$("#cliente").text();
+                $("#producto").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+         $.ajax({
+                url: '@Url.Action("GetQuantityVendor", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('proveedor' +result);
+                //$("#cliente").text();
+                $("#proveedor").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+         $.ajax({
+                url: '@Url.Action("GetQuantityEmployees", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('empleado' +result);
+                //$("#cliente").text();
+                $("#empleado").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+        $.ajax({
+                url: '@Url.Action("GetQuantityEndososCertificados", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('compra' +result);
+                //$("#cliente").text();
+                $("#compra").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+        $.ajax({
+                url: '@Url.Action("GetQuantityBranch", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('sucursal' +result);
+                //$("#cliente").text();
+                $("#sucursal").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+        $.ajax({
+                url: '@Url.Action("GetQuantityGoodsReceived", "DashBoard")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                // data: dataObject,
+                success: function (result) {
+                 console.log('entrada' +result);
+                //$("#cliente").text();
+                $("#entrada").text(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+    });
+</script>

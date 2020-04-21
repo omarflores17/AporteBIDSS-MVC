@@ -1,0 +1,167 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Index";
+}
+
+<script>
+
+    function onsave(e) {
+    }
+
+    function AddRegistroGastos() {
+
+        $('#ModalRegistroGastos').find(':input').not(':submit').val('');
+        $('#ModalRegistroGastos').modal('show');
+        $("#Id").val('0');
+        $("#IdEstado").data("kendoDropDownList").value(0);
+        $("#TipoGastosId").data("kendoDropDownList").value(0);
+        $("#BranchId").data("kendoDropDownList").value(0);
+
+    }
+
+    function EditRegistroGastos(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 Id: dataItem.Id,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddRegistroGastos", "RegistroGastos")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    $("#numRegistroGastos").html('');
+                    $("#numRegistroGastos").html(result);
+
+                    $('#ModalRegistroGastos').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridRegistroGastos").getKendoGrid();
+        grid.dataSource.read();
+    } 
+
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "RegistroGastos")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridRegistroGastos").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+<h3 class="text-themecolor">Registro de gastos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.RegistroGastos>
+        ()
+
+                        .Name("gridRegistroGastos")
+
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditRegistroGastos");
+                                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                //command.Destroy();
+                            }).Width(150).Title("Acciones");
+                            columns.Bound(p => p.Id).Title("No.").Width(140);
+                            columns.Bound(p => p.Detalle).Title("Descripción").Width(200);
+                            columns.Bound(p => p.Identidad).Title("Fecha").Width(200);
+                            columns.Bound(p => p.Concepto).Title("Concepto").Width(200);
+                            columns.Bound(p => p.monto).Title("Monto").Width(200);                         
+                            columns.Bound(p => p.Estado).Width(150);
+                        })
+                        .ToolBar(tools =>
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddRegistroGastos()"});
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("Registro de Gastos" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("RegistroGastos_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "RegistroGastos"))
+                       .Create(create => create.Action("Insert", "RegistroGastos").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "RegistroGastos").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "RegistroGastos").Type(HttpVerbs.Post))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+    )
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridRegistroGastos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridRegistroGastos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+<div id="numRegistroGastos">
+    @await Html.PartialAsync("pvwAddRegistroGastos", new ERPMVC.DTO.RegistroGastosDTO { Id = 0 })
+</div>

@@ -1,0 +1,56 @@
+Administracion
+Administracion.Informacion de la Empresa
+Administracion.Parametros
+Administracion.Parametros.Sucursales
+Administracion.Parametros.Lineas
+Administracion.Parametros.Grupos
+Administracion.Parametros.Marcas
+Administracion.Parametros.Puesto
+Administracion.Parametros.Ciudades
+Administracion.Parametros.Departamentos
+Administracion.Parametros.Impuestos
+Administracion.Parametros.Configuracion Intereses
+Administracion.Parametros.Tasa de Interes
+Administracion.Parametros.Reglas de Mora
+Administracion.Parametros.CAI
+Administracion.Parametros.Puntos Emision
+Administracion.Parametros.Tipos de Documentos
+Administracion.Parametros.Numeracion SAR
+Inventarios
+Inventarios.Productos
+Inventarios.Productos.Productos
+Inventarios.Productos.Tipos de Producto
+Inventarios.Transferencia de Inventario
+Inventarios.Transferencia de Inventario.Entradas
+Inventarios.Transferencia de Inventario.Salidas
+Inventarios.Ordenes de Compra
+Inventarios.Kardex
+Inventarios.Ajuste de Kardex
+Clientes
+Clientes.Listado de Clientes
+Clientes.Listado de Clientes.Editar Cliente
+Clientes.Lista Negra
+Clientes.Tipo de Cliente
+Ventas
+Ventas.Contratos
+Ventas.Cotizacion
+Ventas.Facturacion Contado
+Ventas.Consultar Cuentas
+Proveedores
+Proveedores.Proveedores
+Proveedores.Tipo Proveedores
+Seguridad
+Seguridad.Listar Permisos
+Seguridad.Modificar Permisos Rol
+Seguridad.Permiso Roles
+Seguridad.Iniciar Sesion
+Seguridad.Usuarios
+Seguridad.Roles
+Seguridad.Roles por Usuario
+Empleados
+Empleados.Empleados
+Empleados.Departamentos
+Gastos
+Gastos.Tipos de Gastos
+Gastos.Registro de Gastos
+Reportes

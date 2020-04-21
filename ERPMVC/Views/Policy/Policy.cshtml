@@ -1,0 +1,240 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Policy";
+}
+
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+
+         function EditPolicy(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("GripPolicy","Policy")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numpolicy").html('');
+                    $("#numpolicy").html(result);
+
+                  //  RefreshCotizacionesDetail();
+                    $("#btnPolicy").hide();
+                    $('#ModalPolicy').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+    function AddPolicy() {
+        $('#ModalPolicy').find(':input').not(':submit').val('');
+        $("#Id").val('00000000-0000-0000-0000-000000000000');
+
+        $('#ModalPolicy').modal('show');
+
+
+
+
+    }
+
+
+    function RefreshPolicy() {
+
+        var grid = $("#gridCPolicy").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+</script>
+
+<h3 class="text-themecolor">Política</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Policy>
+                                  ()
+
+                                    .Name("gridCPolicy")
+
+                                    .Columns(columns =>
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            //command.Custom("Ver detalles").Click("Detalles");
+                                            command.Custom(" ").Click("EditPolicy").IconClass("fa fa-edit");
+                                            command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                        }).Width(270).Title("Acciones");
+
+                                        columns.Bound(p => p.Id).Width(300);
+                                        columns.Bound(p => p.Name).Width(200);
+                                        columns.Bound(p => p.Description).Width(250);
+                                        columns.Bound(p => p.type).Width(200);
+                                        columns.Bound(p => p.Estado).Width(150);
+
+                                        // columns.Bound(p => p.FechaCreacion).Hidden();
+
+
+
+                                    })
+
+
+                                    .ToolBar(tools =>
+                                    {
+
+                                        //  tools.Create();
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPolicy()" });
+                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("PoliticaReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    .Excel(excel => excel.FileName("PoliticaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
+
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.Id);
+                                        model.Field(p => p.Id).Editable(false);
+
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("Get", "Policy"))
+                                    .Create(create => create.Action("Insert", "Policy").Type(HttpVerbs.Post))
+                                    .Update(update => update.Action("Update", "Policy").Type(HttpVerbs.Put))
+                                    .Destroy(destroy => destroy.Action("Delete", "Policy", new { Id = "{0}" }).Type(HttpVerbs.Delete))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
+)
+
+<div id="numpolicy">
+    @await Html.PartialAsync("GripPolicy", new ERPMVC.DTO.DTO_Policy { Id = new Guid("00000000-0000-0000-0000-000000000000") })
+</div>
+
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCPolicy").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCPolicy").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+
+@*<div id="ModalPolicy2" class="modal fade" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Politicas</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <form class="form-signin" asp-controller="NumeracionSAR" asp-action="Insert"
+                                      data-ajax-method="post"
+                                      data-ajax-complete="completed"
+                                      data-ajax="true">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="no_inicio">Id</label>
+                                            <input class="form-control" planceholder="Id" id="Id" name="Id" type="text" readonly="readonly">
+
+                                        </div>
+                                    </div>
+
+                                    <br />
+
+                                    <div class="form-group">
+                                        <div class="col-md-4">
+                                            <label for="Name"></label>
+                                            <input class="form-control" planceholder="Nombre" id="Name" name="Name" type="text">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label for="no_fin">N° Final</label>
+                                            <input class="form-control" planceholder="Descrpcion" id="Description" name="Description" type="text">
+                                        </div>
+
+
+                                        <div class="col-md-4">
+                                            <label for="Fecha_limite">Fecha Limite</label>
+                                            <input class="form-control" planceholder="Tipo" id="type" name="type" type="date">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button id="btnumeracion" class="btn btn-lg btn-primary btn-block" type="submit">
+                                                Guardar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                            <div class="modal-footer">
+
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+
+

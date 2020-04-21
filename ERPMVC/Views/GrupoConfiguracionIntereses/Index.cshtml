@@ -1,0 +1,162 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Index";
+}
+
+<script>
+
+    function onsave(e) {
+    }
+
+    function AddGrupoConfiguracionIntereses() {
+
+        $('#ModalGrupoConfiguracionIntereses').find(':input').not(':submit').val('');
+        $('#ModalGrupoConfiguracionIntereses').modal('show');
+        $("#Id").val('0');
+        $("#IdEstado").data("kendoDropDownList").value(0);
+    }
+
+    function EditGrupoConfiguracionIntereses(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 Id: dataItem.Id,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddGrupoConfiguracionIntereses", "GrupoConfiguracionIntereses")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    $("#numGrupoConfiguracionIntereses").html('');
+                    $("#numGrupoConfiguracionIntereses").html(result);
+
+                    $('#ModalGrupoConfiguracionIntereses').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridGrupoConfiguracionIntereses").getKendoGrid();
+        grid.dataSource.read();
+    } 
+
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "GrupoConfiguracionIntereses")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridGrupoConfiguracionIntereses").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+<h3 class="text-themecolor">Grupo de configuración de Tasa de Interés</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.GrupoConfiguracionIntereses>
+        ()
+
+                        .Name("gridGrupoConfiguracionIntereses")
+
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGrupoConfiguracionIntereses");
+                                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                //command.Destroy();
+                            }).Width(150).Title("Acciones");
+                            columns.Bound(p => p.Id).Title("No.").Width(140);
+                            columns.Bound(p => p.Grupo_key).Title("Llave de grupo").Width(150);
+                            columns.Bound(p => p.Nombre).Title("Descripción").Width(200);
+                            columns.Bound(p => p.Estado).Width(150);
+                        })
+                        .ToolBar(tools =>
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGrupoConfiguracionIntereses()"});
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("Grupo de configuración de intereses" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("GrupoDeConfiguracionDeIntereses_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "GrupoConfiguracionIntereses"))
+                       .Create(create => create.Action("Insert", "GrupoConfiguracionIntereses").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "GrupoConfiguracionIntereses").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "GrupoConfiguracionIntereses").Type(HttpVerbs.Post))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+    )
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridGrupoConfiguracionIntereses").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridGrupoConfiguracionIntereses").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+<div id="numGrupoConfiguracionIntereses">
+    @await Html.PartialAsync("pvwAddGrupoConfiguracionIntereses", new ERPMVC.DTO.GrupoConfiguracionInteresesDTO { Id = 0 })
+</div>

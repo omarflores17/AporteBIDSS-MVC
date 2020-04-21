@@ -1,0 +1,175 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Trasnferencia de inventario";
+}
+
+<script>
+
+    function AgregarUoM() {
+
+         var dataObject = {
+            Id: 0
+        };
+        debugger
+        $.ajax({
+            url: '@Url.Action("Details", "InventoryTransfer")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                window.location.href = "@Url.Action("Details", "InventoryTransfer")";
+                RefreshCotizacionesDetail();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+
+
+    }
+
+    //-- Editar --
+    
+    function EditUoM(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+        $.ajax({
+            url: '@Url.Action("Details", "InventoryTransfer")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                var txt = $(result);
+                $("#frmUnitOfMeasure").html('');
+                $("#frmUnitOfMeasure").html(result);
+                window.location.href = "@Url.Action("Details", "InventoryTransfer")?ContratoId=" + dataItem.Id;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+     
+    function RefrescarGrid() {
+        var grid = $("#gridUoM").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+</script>
+
+<h3 class="text-themecolor">Entradas</h3>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.InventoryTransfer>
+                ()
+                .Name("gridUoM")
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-edit").Click("EditUoM");
+                        //command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                        //command.Custom("Pagos").Click("PagoUoM").IconClass("fa fa-credit-card-alt").Text(" ");
+                    }).Width(120).Title("Acciones");
+                    columns.Bound(p => p.Id).Width(100).Title("No");
+                    columns.Bound(p => p.Description).Width(100).Title("Descripcion");
+                    columns.Bound(p => p.SourceBranch.BranchName).Width(100).Title("Origen");
+                    columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
+                    columns.Bound(p => p.Estados.NombreEstado).Title("Estado").Width(170);
+                })
+                .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+
+
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+                ))
+                .ToolBar(tools =>
+                {
+                    //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "AgregarUoM();" });
+                    //tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                    //tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("VendorTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("VendorTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    //model.Id(p => p.ContratoId);
+                    //model.Field(p => p.ContratoId).Editable(false);
+
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get2", "InventoryTransfer"))
+                .Create(create => create.Action("Insert", "InventoryTransfer"))
+                .Update(update => update.Action("Update", "InventoryTransfer", new { id = "{0}" }))
+                )
+)
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridUoM").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridUoM").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Registro");
+    setRowButtonTooltip(".k-grid-Pagos", "Pagar Registro");
+</script>

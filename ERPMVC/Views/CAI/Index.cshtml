@@ -1,0 +1,214 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "CAI";
+   
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+
+    function AddCAI() {
+
+       
+        var validator = $("#frmCAI").data("kendoValidator");
+        validator.hideMessages();
+        var x = document.getElementsByClassName("k-invalid");
+        if (x.length > 0) {
+            $("span").removeClass("k-invalid");
+        }
+        $('#ModalCAI').find(':input').not(':submit').val('');
+
+        $('#ModalCAI').modal('show');
+        $("#IdCAI").val('0');
+        $("#IdEstado").data('kendoDropDownList').value(0);
+
+
+
+
+    }
+
+    
+         function EditCAI(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdCAI: dataItem.IdCAI,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddCAI", "CAI")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numCAI").html('');
+                    $("#numCAI").html(result);
+
+                
+                    //$("#btnCAI").hide();
+                    $('#ModalCAI').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+    function RefrescarGrid() {
+      
+        var grid = $("#gridCAI").getKendoGrid();
+            grid.dataSource.read();
+       
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">CAI</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.CAI>
+      ()
+
+        .Name("gridCAI")
+
+        .Columns(columns =>
+        {
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCAI");
+                command.Destroy().Text(" ").IconClass("fa fa-trash");
+            }).Width(150).Title("Acciones");
+            columns.Bound(p => p.IdCAI).Width(100);
+            columns.Bound(p => p._cai).Title("CAI").Width(200);
+            columns.Bound(p => p.FechaRecepcion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaRecepcion), 'dd/MM/yyyy') #").Width(170);
+            columns.Bound(p => p.FechaLimiteEmision).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaLimiteEmision), 'dd/MM/yyyy') #").Width(200);
+            columns.Bound(p => p.Estado).Width(100);
+            //columns.Bound(p => p.UsuarioCreacion).Width(170);
+            //columns.Bound(p => p.UsuarioModificacion).Width(190);
+
+
+        })
+            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                       .Clear()
+                                       .Contains("Contiene")
+                                       .DoesNotContain("No contiene")
+                                       .EndsWith("Termina con")
+                                       .IsEqualTo("Es igual a")
+                                       .IsNotEqualTo("No es igual a")
+                                       .IsNull("Es nulo")
+                                       .StartsWith("Inicia con")
+
+
+                                 )
+                                 .ForNumber(n => n
+                                   .Clear()
+                                   .IsEqualTo("Es igual a")
+                                   .IsGreaterThan("Es mayor que")
+                                   .IsLessThan("Es menor que")
+                                   .IsNull("Es nulo")
+                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 )
+                                 .ForDate(d => d
+                                 .Clear()
+                                 .IsEqualTo("Es igual que")
+                                 .IsGreaterThan("Es mayor que")
+                                 .IsLessThan("Es menor que")
+                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 .IsNotEqualTo("No es igual que")
+                                  )
+                               ))
+
+        .ToolBar(tools =>
+        {
+
+            //tools.Create();
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCAI()" });
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+        })
+        .Editable(e => e.Mode(GridEditMode.PopUp))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        .Pdf(pdf => pdf.FileName("CAI Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+        .Excel(excel => excel.FileName("CAI Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+        .DataSource(dataSource =>
+        dataSource
+        .WebApi()
+
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.IdCAI);
+            model.Field(p => p.IdCAI).Editable(false);
+            model.Field(p => p.FechaCreacion).Editable(true);
+            model.Field(p => p.FechaLimiteEmision).Editable(true);
+            model.Field(p => p.FechaRecepcion).Editable(true);
+            model.Field(p => p.UsuarioCreacion).Editable(false);
+            model.Field(p => p.UsuarioModificacion).Editable(false);
+
+        })
+        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+        .Events(events => events.Error("error_handler"))
+        .Read(read => read.Action("Get", "CAI"))
+        .Create(create => create.Action("Insert", "CAI").Type(HttpVerbs.Post).Data("caidata"))
+        .Update(update => update.Action("Update", "CAI").Type(HttpVerbs.Post).Data("caidata"))
+        .Destroy(destroy => destroy.Action("Delete", "CAI", new { IdCAI = "{0}" }).Type(HttpVerbs.Delete))
+
+        )
+        .Events(e =>
+        {
+            e.Save("onsave");
+
+        })
+)
+
+<div id="numCAI">
+    @await Html.PartialAsync("pvwAddCAI", new ERPMVC.DTO.CAIDTO { IdCAI = 0, FechaLimiteEmision = DateTime.Now, FechaRecepcion = DateTime.Now })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCAI").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCAI").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

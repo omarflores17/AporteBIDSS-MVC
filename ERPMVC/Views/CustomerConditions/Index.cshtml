@@ -1,0 +1,225 @@
+﻿<script>
+
+    function closecustomercondition() {
+        $("#myModalCustomerConditions").modal('hide');
+    }
+
+    function closecustomerconditionMant() {
+        $("#myModalCustomerConditionsMant").modal('hide');
+    }
+
+    function seteardropdowns(nombrenumerico, valor) {
+        var dropdown = $("#" + nombrenumerico).data("kendoDropDownList");
+        dropdown.value(valor);
+        dropdown.trigger('change');
+      //  dropdown = null;
+    }
+
+    function setearcombobox(nombrenumerico, valor) {
+        var combo = $("#" + nombrenumerico).data("kendoComboBox");
+        combo.value((valor.toString()));      
+        combo.trigger("select");     
+    } 
+
+    function AddCustomerCondition() {
+
+        $("#CustomerId_CC").data("kendoDropDownList").dataSource.read();
+
+        seteardropdowns("ProductId_CC", $("#ProductId").val());
+        seteardropdowns("IdTipoDocumento", 12 );
+        seteardropdowns("CustomerId_CC", $("#CustomerId").val() );
+         //setearcombobox("ProductId_CC", $("#ProductId").val());       
+         //$('#ConditionId_CC').val('0');
+         //$('#ProductId').data("kendoDropDownList").value(0);
+
+        $('#SubProductId').data("kendoDropDownList").value('0');      
+        $('#IdTipoDocumento').data("kendoDropDownList").value(0);
+        $('#CustomerConditionName').val('');       
+        $('#CustomerConditionName').val('');
+        $("#Description").val('');
+        $("#btnGuardarCustomerCondition").prop("disabled", false);
+
+        $("#myModalCustomerConditionsMant").modal('show');
+        
+    }
+
+
+    function EditCustomerCondition(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.CustomerConditionId,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerConditions", "CustomerConditions")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numElementoConfiguracion").html('');
+                $("#numElementoConfiguracion").html(result);
+
+                $('#ModalElementoConfiguracion').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                //console.log('RESULTADO', result);
+                console.log(textStatus + ": " + XMLHttpRequest.responseText)
+            }
+        });
+    }
+
+
+    function filterdatacc() {
+        return {
+            'DocumentId': $("#SalesOrderId").val(),
+            'IdTipoDocumento': 12
+        };
+    }
+
+
+    function dataBoundCustomerConditions(e) {
+        $.each(this.dataSource.data(), function () {
+            console.log($("#IdEstado").val());
+            if ($("#IdEstado").val()!= 8) {
+                //  console.log(this.SalesOrderId);
+                $('[data-uid=' + this.uid + ']').find('.k-grid-delete').hide();
+
+            }
+            //if (Number(this.CustomerId) > 0) {
+            //    $('[data-uid=' + this.uid + ']').find('.k-grid-CrearCliente').hide();
+            //}
+        })
+    }
+
+</script>
+
+@await Html.PartialAsync("~/Views/CustomerConditions/pvwCustomerConditions.cshtml", new ERPMVC.Models.CustomerConditions ())
+
+<div id="myModalCustomerConditions" class="modal fade" role="dialog" style="z-index:99999">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="closecustomercondition();">&times;</button>
+                <h4 class="modal-title">Detalle de condición</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row" id="validationcondition">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            @(Html.Kendo().Grid<ERPMVC.Models.CustomerConditions>()
+                                                .Name("gridCustomerCondition")
+                                                .Columns(columns =>
+                                                {
+                                                   
+                                                    columns.Command(command =>
+                                                    {                                                        
+                                                        //command.Edit().Text("Editar");
+                                                        command.Destroy().Text("Eliminar");
+                                                    }).Width(250);
+                                                    columns.Bound(p => p.CustomerConditionId).Width(140);
+                                                    columns.Bound(p => p.ConditionId).Width(140);
+                                                    columns.Bound(p => p.CustomerConditionName).Width(140);
+                                                    columns.Bound(p => p.Description).Width(140);
+                                                    columns.Bound(p => p.LogicalCondition).Width(150);
+                                                    columns.Bound(p => p.ValueToEvaluate).Width(150);
+                                                    columns.Bound(p => p.ValueDecimal).Width(150);
+
+                                                })
+                                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                              .Clear()
+                                                     .Contains("Contiene")
+                                                     .DoesNotContain("No contiene")
+                                                     .EndsWith("Termina con")
+                                                     .IsEqualTo("Es igual a")
+                                                     .IsNotEqualTo("No es igual a")
+                                                     .IsNull("Es nulo")
+                                                     .StartsWith("Inicia con")
+
+
+                                               )
+                                               .ForNumber(n => n
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual a")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsNull("Es nulo")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                               )
+                                               .ForDate(d => d
+                                               .Clear()
+                                               .IsEqualTo("Es igual que")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                               .IsNotEqualTo("No es igual que")
+                                                )
+                                             ))
+                                                              .ToolBar(tools =>
+                                                              {
+                                                                  //tools.Create();
+                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
+                                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                                              })
+                                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                .Sortable()
+                                                .Pageable()
+                                                .Filterable()
+                                                .Scrollable()
+                                                .Pdf(pdf => pdf.FileName("CustomerConditionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                    .Excel(excel => excel.FileName("CustomerConditionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                 .Events(e => e.DataBound("dataBoundCustomerConditions"))
+                                                .DataSource(dataSource =>
+                                                    dataSource
+                                                    .WebApi()
+
+                                                    .ServerOperation(true)
+                                                    .Model(model =>
+                                                    {
+                                                        model.Id(p => p.CustomerConditionId);
+                                                        model.Field(p => p.CustomerConditionId).Editable(false);
+                                                        model.Field(p => p.ConditionId).Editable(true);
+                                                        model.Field(p => p.FechaCreacion).Editable(false);
+                                                        model.Field(p => p.FechaModificacion).Editable(false);
+                                                        model.Field(p => p.CustomerConditionId).Editable(false);
+
+                                                    })
+                                                    .Events(events => events.Error("error_handler"))
+                                                    .Read(read => read.Action("Get", "CustomerConditions")
+                                                         .Type(HttpVerbs.Get).Data("filterdatacc"))
+                                                    .Create(create => create.Action("Insert", "CustomerConditions").Type(HttpVerbs.Post))
+                                                    .Update(update => update.Action("Update", "CustomerConditions", new { id = "{0}" }))
+                                                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions").Type(HttpVerbs.Post))
+
+                                                )
+                                                .Events(e =>
+                                                {
+                                                    // e.Save("onsave");
+
+                                                })
+                            )
+
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>

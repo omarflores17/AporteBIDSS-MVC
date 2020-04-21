@@ -1,0 +1,794 @@
+﻿@model ERPMVC.DTO.SalesOrderLineDTO
+@{
+    var Linea = ViewData["producto"] as IEnumerable<ERPMVC.Models.Product>;
+}
+
+
+<script>
+
+
+    function GetSalesOrderId() {
+        closesaleorderline();
+        var subproductname = '', unidaddemedida = '';
+        if ($("#UnitOfMeasureId") != null) {
+            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+            }
+        }
+        if ($("#ProductId") != null) {
+            if ($("#ProductId").data("kendoDropDownList") != null) {
+                subproductname = $("#ProductId").data("kendoDropDownList").text();
+            }
+        }
+
+        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+        var id = -999999;
+         debugger;
+        if (Number($("#SalesOrderLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].SalesOrderLineId > id)
+                        id = displayedData[i].SalesOrderLineId;
+
+                }
+
+                id = id + 1;
+            }
+            else if ($("#ProductId").val()>0) {
+                id = 1;
+            }
+
+        }
+        else {
+            id = $("#SalesOrderLineId").val(0);
+            console.log("nuemero SalesOrderLineId:", id);
+        }
+
+
+        return {
+                SalesOrderLineId: id,
+                SalesOrderId: @Model.SalesOrderId,
+                UnitOfMeasureId : $("#UnitOfMeasureId").val(),
+                UnitOfMeasureName: unidaddemedida,
+                ProductId: $("#ProductId").val(),
+                //ProductName: subproductname,
+                Description: $("#DescriptionDetail").val(),
+                Quantity: $("#Quantity").val(),
+                Price: $("#Price").val(),
+                Amount: $("#AmountLine").val(),
+                DiscountPercentage: $("#DiscountPercentage").val(),
+                DiscountAmount: $("#DiscountAmount").val(),
+                SubTotal: $("#SubTotalLine").val(),
+                TaxPercentage: $("#TaxPercentage").val(),
+                TaxCode: $("#TaxCode").val(),
+                TaxAmount: $("#TaxAmount").val(),
+            Total: $("#TotalLine").val(),
+            //valores de contrato
+            Cantidad: $("#Cantidad").val(),
+            Precio: $("#Precio").val(),
+            Serie: $("#Serie").val(),
+            Modelo: $("#Modelo").val(),
+            Monto: $("#Monto").val(),
+            FundingInterestRate: $("#Funding").val(),
+            Tax: $("#PorcentajeTax").val(),
+            Valor_prima: $("#prima").val(),
+            PorcentajeDescuento: $("#prima").val(),
+            }
+        }
+
+
+
+
+    function AddCotizacionDetalle() {
+            $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
+            $('#TaxCode').val(0);
+            $('#myModalSalesOrderLine').modal('show');
+        return true;
+    }
+
+    function llenarsubproduct() {
+        var combobox = $('#SubProductId').getKendoDropDownList();
+
+            var dataObject = { 'ProductId': $("#ProductId").val() };
+              $.ajax({
+                    url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
+                    method: 'GET',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: dataObject,
+                    success: function (data) {
+                        combobox.setDataSource(data);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                      //  $("#btngenerarfactura").show();
+                        notification.show({
+                            title: "Validación",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+    }
+
+    function EditCotizacionDetalle(e) {
+
+        e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var subproducto = 0;
+        var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
+
+        var codigoimpuesto = 0;
+
+        if (dataItem.SalesOrderId > 0) {
+            $.ajax({
+                url: '@Url.Action("pvwSalesOrderDetailMant", "SalesOrderLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#SalesOrderLineMant").html('');
+                    $("#SalesOrderLineMant").html(data);
+                    var txt = $(data);
+                    var found = $("#SubProductId", txt);
+                    subproducto = $(found).val();
+
+
+                    //var foundcodigoimpuesto = $("#TaxCode", txt);
+                    //console.log(foundcodigoimpuesto);
+                    //codigoimpuesto = $(foundcodigoimpuesto).val();
+                    //console.log(codigoimpuesto);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+
+           // console.log(subproducto);
+            $("#frmSalesOrderLine :input").prop("disabled", true);
+            llenarsubproduct();
+            var combobox = $('#SubProductId').getKendoDropDownList();
+            combobox.value(subproducto);
+            combobox.trigger('change');
+
+            //var comboboxtaxcode = $('#TaxCode').getKendoDropDownList();
+            //comboboxtaxcode.dataSource.read();
+            //comboboxtaxcode.value(codigoimpuesto);
+            //comboboxtaxcode.trigger('change');
+
+        }
+        else {
+            $("#SalesOrderLineId").val(dataItem.SalesOrderLineId);
+            $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
+            $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
+            $("#Description").val(dataItem.Description);
+            $("#Amount").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#Total").data("kendoNumericTextBox").value(dataItem.Total);
+            $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
+            $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
+            $("#SubTotal").data("kendoNumericTextBox").value(dataItem.SubTotal);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
+            $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+            $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
+
+        }
+
+        $('#myModalSalesOrderLine').modal('show');
+
+    }
+
+
+        function Delete(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            debugger
+            $.ajax({
+                url: '@Url.Action("Delete", "SalesOrderLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            var grid = $("#gridCotizacionesDetail").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+            //Sync it with the grid
+            //grid.dataSource.sync();
+        }
+    }
+
+</script>
+<style>
+    #gridCotizacionesDetail .k-grid-content {
+        min-height: 400px;
+        max-height: 500px;
+    }
+</style>
+
+
+<script>
+    $(document).ready(function () {
+        clearsession()
+    });
+
+    function GetProductIdS() {
+        return { 'ProductId': $("#ProductId").val() }
+    }
+    function customFunction(input) {
+
+        if (input.attr('name') === "SalesOrderLineId" && input.val() === "0") {
+            return false;
+        }
+
+
+        return true;
+    }
+
+
+    function RefrescarGridLinea() {
+
+        var grid = $("#gridCotizacionesDetail").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+
+        $("#SalesOrderLineId").val(0);
+
+    }
+
+    completedorderlinemant = function (xhr) {
+
+        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
+        $('#TaxCode').val('0');
+        $('#UnitOfMeasureId').data("kendoDropDownList").value('0');
+        $('#TaxCode').data("kendoDropDownList").value(0);
+        $('#ProductId').data("kendoDropDownList").value(0);
+        $('Description').val('');
+        CalcularTotalDocumento();
+        $("#btnActualizarCotizacionLinea").prop("disabled", false);
+       closesaleorderline();
+    };
+
+
+    function closesaleorderline() {
+        $("#myModalSalesOrderLine").modal('hide');
+        $('.modal').on('hidden.bs.modal', function () {
+            $(this).find('form')[0].reset();
+            $("label.error").remove();
+        });
+
+    }
+    //calcular totales en base ala prima
+    function CalcularTotalprima() {
+        debugger;
+        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.view();
+        var SinFinaciar = 0, Impuesto = 0, ValorContado = 0, PrimaMonto = 0, ValorPrima = 0;
+        var SaldoCredito = 0, ValorCuota = 0, TotalContrato = 0, InteresesFinaciar = 0, Finaciar = 0, primaIngresada = $("#ValorPrima").val();
+
+        $(displayedData).each(function (index, element) {
+            var t = JSON.parse(JSON.stringify(element));
+            SinFinaciar = SinFinaciar + t["Monto"];
+            console.log("sd" + SinFinaciar);
+            ISVMonto = t["Monto"] * (t["Tax"] / 100);
+            Impuesto = Impuesto + ISVMonto;
+            PrimaMonto = t["PorcentajeDescuento"] * t["Cantidad"];//PorcentajeDescuento almacena el valor de prima(en la base de datos)
+            ValorPrima = ValorPrima + PrimaMonto;
+
+            ValorContado = SinFinaciar + Impuesto;
+            Finaciar = ValorContado - ValorPrima;
+
+            SaldoCredito = (ValorContado - ValorPrima) * (1 + t["FundingInterestRate"] / 100);
+
+        });
+        primaIngresada = parseFloat(primaIngresada)
+
+        //condicion de validacion de prima
+        debugger;
+        if (primaIngresada == "0") { }
+        else if (primaIngresada > ValorPrima) {
+            ValorPrima = primaIngresada;
+            $(displayedData).each(function (index, element) {
+                var t = JSON.parse(JSON.stringify(element));
+
+                SaldoCredito = (ValorContado - ValorPrima) * (1 + t["FundingInterestRate"] / 100);
+
+            });
+        } else if (primaIngresada < ValorPrima) {
+            alert("La prima ingresada es menor al monto permitido.");
+        }
+        ValorCuota = (SaldoCredito / $("#Plazo").val());
+        TotalContrato = (ValorCuota * $("#Plazo").val()) + ValorPrima;
+        InteresesFinaciar = TotalContrato - ValorContado;
+
+        setearvalor('SinFinaciar', SinFinaciar);
+        setearvalor('Impuesto', Impuesto);
+        setearvalor('PrimaMonto', PrimaMonto);
+        setearvalor('ValorPrima', ValorPrima);
+        setearvalor('Finaciar', Finaciar);
+        setearvalor('ValorContado', ValorContado);
+
+        setearvalor('SaldoCredito', SaldoCredito);
+        setearvalor('ValorCuota', ValorCuota);
+        setearvalor('TotalContrato', TotalContrato);
+        setearvalor('InteresesFinaciar', InteresesFinaciar);
+
+    }
+    //calcular totales 
+    function CalcularTotalDocumento() {
+        debugger;
+
+        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+        var SinFinaciar = 0, Impuesto = 0, ValorContado = 0, PrimaMonto = 0, ValorPrima = 0;
+        var SaldoCredito = 0, ValorCuota = 0, TotalContrato = 0, InteresesFinaciar = 0, Finaciar = 0, primaIngresada = $("#ValorPrima").val();
+
+        $(displayedData).each(function (index, element) {
+            var t = JSON.parse(JSON.stringify(element));
+            SinFinaciar = SinFinaciar + t["Monto"];
+            console.log("sd" + SinFinaciar);
+            ISVMonto = t["Monto"] * (t["Tax"] / 100);
+            Impuesto = Impuesto + ISVMonto;
+            PrimaMonto = t["PorcentajeDescuento"] * t["Cantidad"];;//PorcentajeDescuento almacena el valor de prima(en la base de datos)
+            ValorPrima = ValorPrima + PrimaMonto;
+            ValorContado = SinFinaciar + Impuesto;
+            Finaciar = ValorContado - ValorPrima;
+
+            SaldoCredito = (ValorContado - ValorPrima) * (1 + t["FundingInterestRate"] / 100);
+            ValorCuota = (SaldoCredito / $("#Plazo").val());
+            TotalContrato = (ValorCuota * $("#Plazo").val()) + ValorPrima;
+            InteresesFinaciar = TotalContrato - ValorContado;
+
+        });
+
+        setearvalor('SinFinaciar', SinFinaciar);
+        setearvalor('Impuesto', Impuesto);
+        setearvalor('PrimaMonto', PrimaMonto);
+        setearvalor('ValorPrima', ValorPrima);
+        setearvalor('Finaciar', Finaciar);
+        setearvalor('ValorContado', ValorContado);
+
+        setearvalor('SaldoCredito', SaldoCredito);
+        setearvalor('ValorCuota', ValorCuota);
+        setearvalor('TotalContrato', TotalContrato);
+        setearvalor('InteresesFinaciar', InteresesFinaciar);
+    }
+
+    function RefreshCotizacionesDetail() {
+        debugger;
+        var grid = $("#gridCotizacionesDetail").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+        $("#SalesOrderLineId").val(0);
+          $("#ProductId").data("kendoDropDownList").value(0);
+        $("#Serie").val(0);
+        $("#Precio").val(0);
+        $("#Modelo").val(0);
+        $("#DescriptionDetail").val('');
+        $("#Cantidad").data("kendoNumericTextBox").value('0');
+        $("#Funding").val(0);
+        $("#PorcentajeTax").val(0);
+        $("#prima").val(0);
+        $("#Prueba").val(0);
+        $("#PruebaTax").val(0);
+    }
+    function AddConceptoCotizacion(e) {
+        if ($("#Plazo").val() == 0) {
+            swal("Error", "El Plazo no puede ser 0.");
+        } else if ($("#ProductId").val() == 0) {
+            swal("Error", "seleccione todos los campos");
+        } else if ($("#Cantidad").val() == 0) {
+            swal("Error", "La Cantidad no puede ser 0.");
+        } else if ($("#ProductId").val() > 0) {
+            try {
+                //$("#btnActualizarCotizacionLinea").prop("disabled", true);
+                RefreshCotizacionesDetail();
+                completedorderlinemant();
+                CalcularTotalDocumento();
+            } catch (e) {
+                $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            }
+        }
+    }
+
+
+    function CalcularTotal() {
+        debugger;
+        var quantity = $("#Cantidad").val();
+        var price = $("#Precio").val();
+        var Monto = quantity * price;
+        setearvalor("Monto", Monto);
+        //var DiscountAmount = amount * ($("#DiscountPercentage").val() / 100);
+        //setearvalor("DiscountAmount", DiscountAmount);
+        //var subtotal = amount - DiscountAmount;
+        //var taxamount = subtotal * ($("#TaxPercentage").val() / 100) ;
+        //setearvalor("TaxAmount", taxamount);
+        //setearvalor("SubTotalLine", subtotal);
+        //var Total = subtotal + taxamount;
+        //setearvalor("TotalLine", Total);
+    }
+    //Setear valores
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+    //solo acepte numeros
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        if (key == 13) {
+            //para desplegar los drop de producto
+            var numerictextbox = $("#ProductId").data("kendoDropDownList");
+            numerictextbox.focus();
+            $('#ProductId').data("kendoDropDownList").open();
+        }
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+    //para cargar producto
+    function SetProductName(e) {
+
+        if ($("#ProductId").val() > 0) {
+            debugger;
+
+            var numerictextbox = $("#Cantidad").data("kendoNumericTextBox");
+            numerictextbox.focus();
+
+            $("#ProductName").val($("#ProductId").data("kendoDropDownList").text());
+            var dataObject = { ProductId: $("#ProductId").val()};
+                $.ajax({
+                url: '@Url.Action("GetProductById", "Product")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    $("#DescriptionDetail").val(result.Description);
+                    $("#Precio").val(result.DefaultSellingPrice);
+                    debugger
+                    $("#Prueba").val(result.FundingInterestRateId);
+                    $("#PruebaTax").val(result.TaxId);
+                    $("#prima").val(result.Valor_prima);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            if ($("#Prueba").val() > 0) {
+                var dataObject = { FundingInterestRateId: $("#Prueba").val()};
+                $.ajax({
+                url: '@Url.Action("GetFundingInterestRate", "FundingInterestRate")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    $("#Funding").val(result.Rate);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+                });
+            }
+            if ($("#PruebaTax").val() > 0) {
+                var dataObject = { TaxId: $("#PruebaTax").val()};
+                $.ajax({
+                url: '@Url.Action("GetTaxById", "Tax")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    $("#PorcentajeTax").val(result.TaxPercentage);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+                });
+            }
+        }
+        else
+        {
+           $("#SalesOrderName").prop('disabled', false);
+        }
+    }
+</script>
+
+
+@{
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                            {"required","Valor requerido" }
+                                         };
+    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<div class="row" id="validation">
+    <div class="col-lg-12">
+                <form id="frmcotizar" kendo-validator="true"
+                      method="post" class="validation-wizard wizard-circle">
+
+                            <div class="row" hidden>
+                                <div class="col-md-0">
+                                    <div class="form-group">
+                                        <label asp-for="SalesOrderLineId" class="control-label" style="width:100%"></label>
+                                        <input type="number" asp-for="SalesOrderLineId" class="form-control" style="min-width:100%" disabled />
+
+                                    </div>
+                                </div>
+                                <div class="col-md-0">
+                                    <div class="form-group">
+                                        <label asp-for="SalesOrderId" class="control-label" style="width:100%"></label>
+                                        <input type="number" asp-for="SalesOrderId" class="form-control" style="min-width:100%" disabled value="@Model.SalesOrderId" />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ProductId" class="control-label" style="width:100%"></label>
+                                        <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="ProductId"
+                                                            option-label="Seleccione el Producto"
+                                                            datatextfield="ProductName"
+                                                            datavaluefield="ProductId"
+                                                            data-validate="false"
+                                                            onchange="SetProductName();"
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi">
+                                                <transport>
+                                                    <read url="@Url.Action("GetProduct", "Common")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Precio" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="Precio" readonly required asp-for="Precio" onchange="CalcularTotal();" class="k-textbox" style="min-width:100%" />
+                                        <span asp-validation-for="Precio" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Cantidad" class="control-label" style="width:100%"></label>
+                                        <kendo-numerictextbox name="Cantidad"
+                                                              id="Cantidad"
+                                                              format="#"
+                                                              decimals="0"
+                                                              required
+                                                              onchange="CalcularTotal();"
+                                                              style="width:100%"
+                                                              value="Model.Cantidad" />
+                                        <span asp-validation-for="Cantidad" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label" style="width:100%">Descripción</label>
+                                        <input asp-for="Description" type="text" id="DescriptionDetail" readonly required class="k-textbox" style="min-width: 100% !important;"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" hidden>
+                                <div class="col-md-3" id="Serie">
+                                    <div class="form-group">
+                                        <label asp-for="Serie" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="Serie" required asp-for="Serie" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="Serie" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" id="Modelo">
+                                    <div class="form-group">
+                                        <label asp-for="Modelo" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="Modelo" required asp-for="Modelo" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="Modelo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" hidden>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Monto" class="control-label" style="width:100%"></label>
+                                        <kendo-numerictextbox name="Amount"
+                                                              format="n2"
+                                                              id="Monto"
+                                                              spinners="false"
+                                                              min="0"
+                                                              required
+                                                              step="1"
+                                                              style="width:100%"
+                                                              value="Model.Monto" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="FundingInterestRate" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="Prueba" required asp-for="FundingInterestRate" class="form-control" style="min-width:100%" />
+                                        <input type="text" id="Funding" required asp-for="FundingInterestRate" class="form-control" style="min-width:100%" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Valor_prima" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="prima" asp-for="PorcentajeDescuento" required class="form-control" style="min-width:100%" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Tax" class="control-label" style="width:100%"></label>
+                                        <input type="text" id="PruebaTax" required asp-for="Tax" class="form-control" style="min-width:100%" />
+                                        <input type="text" id="PorcentajeTax" required asp-for="Tax" class="form-control" style="min-width:100%" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="btnActualizarCotizacionLinea" type="submit" class="btn btn-success float-right" onclick="AddConceptoCotizacion()">Añadir producto</button>
+                            </div>
+                </form>
+       
+    </div>
+</div>
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.DTO.SalesOrderLineDTO>()
+                    .Name("gridCotizacionesDetail")
+                    .Columns(columns =>
+                    {
+                        columns.Command(command =>
+                        {
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("Delete");
+
+                        }).Width(150).Title("Acciones");
+
+                        columns.Bound(p => p.SalesOrderLineId).Title("Id Linea").Width(150).Visible(false);
+                        columns.Bound(p => p.SalesOrderId).Title("Cotización Id").Width(150).Visible(false);
+                        columns.Bound(p => p.SubProductName).Title("Producto").Width(150).Visible(false);
+                        columns.Bound(p => p.Description).Title("Nombre").Width(150).Visible(false);
+                        columns.ForeignKey(p => p.ProductId, (System.Collections.IEnumerable)ViewData["producto"], "ProductId", "ProductName").Title("Nombre").Width(150);
+                        columns.ForeignKey(p => p.ProductId, (System.Collections.IEnumerable)ViewData["producto"], "ProductId", "ProductCode").Title("Codigo").Width(150);
+                        columns.Bound(p => p.Cantidad).Title("Cantidad").Width(150);
+                        columns.Bound(p => p.Precio).Title("Precio").Width(150).Format("{0:C}");
+                        columns.Bound(p => p.PorcentajeDescuento).Title("Descuentos").Width(150).Visible(false);
+                        columns.Bound(p => p.Tax).Title("Impuesto").Width(150).Visible(false);
+                        columns.Bound(p => p.FundingInterestRate).Title("Interes").Width(150).Visible(false);
+                        columns.Bound(p => p.Monto).Title("Total").Width(150).Format("{0:C}");
+
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+
+
+            )
+            .ForNumber(n => n
+            .Clear()
+            .IsEqualTo("Es igual a")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsNull("Es nulo")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            )
+            .ForDate(d => d
+            .Clear()
+            .IsEqualTo("Es igual que")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            .IsNotEqualTo("No es igual que")
+            )
+        ))
+                    .ToolBar(tools =>
+                    {
+                        //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .AutoBind(true)
+                    .Pageable()
+                    .Events(e => e.DataBound("CalcularTotalDocumento"))
+                    .Filterable()
+                    .Scrollable()
+                    // .ClientDetailTemplateId("template")
+                    .Pdf(pdf => pdf.FileName("CotizacionDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("CotizacionDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    //.Events(e=>e.Save("onsave"))
+                    .DataSource(dataSource =>
+
+                    dataSource
+                    //.Ajax()
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.SalesOrderLineId);
+                        model.Field(p => p.SalesOrderLineId).Editable(false);
+                        model.Field(p => p.SalesOrderLineId).Editable(false);
+
+                    })
+                    .Events(events =>
+                    {
+                        events.Error("error_handler");
+
+                    })
+                    .Read(read => read.Action("GetSalesOrderLine", "SalesOrderLine").Data("GetSalesOrderId"))
+                    )
+        )
+
+    </div>
+</div>
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCotizacionesDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCotizacionesDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+
+</script>

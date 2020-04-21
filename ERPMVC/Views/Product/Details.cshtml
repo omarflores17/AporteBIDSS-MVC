@@ -1,0 +1,204 @@
+﻿@model ERPMVC.Models.Product
+@{
+    ViewData["Title"] = "Detalle de Producto";
+}
+
+
+
+<script>
+    function GetVendorId() {
+        return { VendorId: $("#VendorId").val() }
+    }
+</script>
+
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h3 id="titulo" class="text-themecolor">Producto  @ViewData["ProductName"]</h3>
+            @(Html.Kendo().TabStrip()
+
+                                                                                                                                                                    .Name("tabDetalleProducto")
+                                                                                                                                                                    .Animation(animation =>
+                                                                                                                                                                        animation.Open(effect =>
+                                                                                                                                                                            effect.Fade(FadeDirection.In)))
+                                                                                                                                                                    .Items(tabstrip =>
+                                                                                                                                                                    {
+
+                                                                                                                                                                        tabstrip.Add().Text("Datos Generales")
+                                                                                                                                                                        //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                                                                                                                                        .LoadContentFrom("pvwAddProduct", "Product", (ERPMVC.Models.Product)ViewData["Product"]);
+
+                                                                                                                                                                        //   tabstrip.Add().Text("Proveedores")
+                                                                                                                                                                        //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                                                                                                                                        //    .LoadContentFrom("ListVendor", "Product", (ERPMVC.Models.Product)ViewData["vendor"]);
+
+
+                                                                                                                                                                        tabstrip.Add().Text("Inventario Por Sucursal")
+                                                                                                                                                                            //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                                                                                                                                            .LoadContentFrom("Inventario", "Product", (ERPMVC.Models.Product)ViewData["branch"]);
+
+
+
+
+                                                                                                                                                                    })
+                                                                                                                                                                    .SelectedIndex(0)
+            )
+        </div>
+
+
+
+
+    </div>
+</div>
+
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>
+<script>
+     function Agregar() {
+
+         var dataObject = {
+             ProductId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Details", "Product")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+             success: function (result) {
+
+                $("#titulo").text("Nuevo Proveedor");
+                window.location.href = "@Url.Action("Details", "Product")";
+                 $('#ModalProduct').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+         
+     }
+
+      @*function ValidarProductCode(e) {
+    debugger;
+
+          var dataObject = {
+              'ProductCode': $("#ProductCode").val()
+          };
+                    $.ajax({
+                        url: '@Url.Action("ValidarCodigoProducto", "Product")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        swal(textStatus + ": " + XMLHttpRequest.responseText + textStatus);
+
+                        }
+                    });
+
+      }*@ 
+
+  function SaveProduct(e) {
+      debugger;
+      if ($("#DefaultSellingPrice").val() == 0) {
+          swal("Error", "El precio de venta no puede ser 0.");
+      } else if ($("#DefaultBuyingPrice").val() == 0) {
+          swal("Error", "El costo no puede ser 0.");
+      } else if ($("#DefaultBuyingPrice").val() > 0) {
+            var notification = $("#notification").data("kendoNotification");
+
+      //var displayedData = $("#gridProduct").data().kendoGrid.dataSource.view();
+            var dataObject = {
+                'ProductId': $("#ProductId").val() === "" ? "0" : $("#ProductId").val(),
+                'ProductName': $("#ProductName").val(),
+                'ProductCode': $("#ProductCode").val(),
+                'Barcode': $("#Barcode").val(),
+                'Description': $("#Description").val(),
+                'ProductImageUrl': 'Ninguna',
+                'IdEstado': '1',
+                'Estado': '',
+                //'UnitOfMeasureId': 1,
+                'DefaultBuyingPrice': $("#DefaultBuyingPrice").val(),
+                'DefaultSellingPrice': $("#DefaultSellingPrice").val(),
+                'BranchId': $("#BranchId").val(),
+                'CurrencyId': 1,
+                'MarcaId': $("#MarcaId").val(),
+                'LineaId': $("#LineaId").val(),
+                'GrupoId': $("#GrupoId").val(),
+                'Correlative': $("#Correlative").val(),
+                'Prima': $("#Prima").val(),
+                'FundingInterestRateId': $("#FundingInterestRateId").val(),
+                'TaxId': $("#TaxId").val(),
+                'Serie': $("#Serie").val(),
+                'Modelo': $("#Modelo").val(),
+                'SerieChasis': $("#SerieChasis").val(),
+                'SerieMotor': $("#SerieMotor").val(),
+                'FlagConsignacion': $("#FlagConsignacion").val(),
+                'PorcentajeDescuento': $("#PorcentajeDescuento").val(),
+                //'_Product': displayedData,
+            };
+      
+      console.log('VERIFICAR', dataObject)
+            var validator = $("#frmProduct").data("kendoValidator");
+                if (validator.validate()) {
+                    console.log("Aqui")
+                    $.ajax({
+                        url: '@Url.Action("SaveProduct", "Product")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                        swal("Producto","Guardado Satisfactoriamente","success");
+                        @*window.location.href = "@Url.Action("Product", "Product")";*@
+                            Agregar();
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log('VERIFICAR')
+                        swal("Error","Error","error");
+
+
+                        }
+                   });
+
+                }
+        }
+  }
+  
+</script>

@@ -1,0 +1,600 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Orden de Compra";
+}
+@{
+    var Linea = ViewData["Sucursal"] as IEnumerable<ERPMVC.Models.Branch>;
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+<script>
+
+    $(document).ready(function () {
+        clearsession();
+    });
+    function RefrescarGridLinea() {
+
+        var grid = $("#gridCotizacionesDetail").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+
+        $("#Id").val(0);
+
+    }
+    function clearsession() {
+        var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+       function DetallesInsert(e) {
+         window.location.href = "@Url.Action("Details", "PurchaseOrder")?Id=0&proceso=Nueva";
+         RefreshCotizacionesDetail();
+         clearsession();
+         RefrescarGridLinea();
+         var dataSource = $("#gridPurchaseOrders").data("kendoGrid").dataSource;
+         var raw = dataSource._data;
+         console.log(raw);
+         //debugger;
+         for (var i = dataSource._data.length - 1; i >= 0; i--) {
+             item = raw[i];
+             dataSource.remove(item);
+         }
+    }
+    function AddCotizacion() {
+        clearsession();
+        RefrescarGridLinea();
+        var dataSource = $("#gridPurchaseOrders").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
+        $("#Id").val('0');
+
+         var dataObject = {
+            Id: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("Details","PurchaseOrder")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+
+                RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").show();
+                 window.location.href = "@Url.Action("Details", "PurchaseOrder")";
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+    function DetallesEdit(e) {
+        debugger;
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Details", "PurchaseOrder")?Id=" + dataItem.Id;
+    }
+    function EditCotizacion(e) {
+        debugger;
+        e.preventDefault();
+        clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            PurchaseOrderId: dataItem.Id,
+            editar : 0
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Details", "PurchaseOrder")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+                var txt = $(result);
+                window.location.href = "@Url.Action("Details", "PurchaseOrder")?Id=" + dataItem.Id;
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });
+
+    }
+        function VerDetalles(e) {
+        debugger;
+        e.preventDefault();
+        clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            PurchaseOrderId: dataItem.Id,
+            editar : 0
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("VerDetalles", "PurchaseOrder")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+                var txt = $(result);
+                window.location.href = "@Url.Action("VerDetalles", "PurchaseOrder")?Id=" + dataItem.Id;
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });
+
+    }
+
+    function ImprimirCotizacion(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var url =  '@Url.Action("SFCotizacion", "PurchaseOrder")/' + dataItem.Id;
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+
+    //$("#gridCotizaciones").kendoTooltip({
+    //    filter: ".k-grid-custom",
+    //    content: function (e) {
+    //        return "Click here";
+    //    }
+    //});
+    //});
+
+    function GenerarContrato(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado == 6) {
+            if (confirm('Esta seguro de generar un contrato?')) {
+                e.preventDefault();
+
+                var dataObject = {
+                   PurchaseOrderId: dataItem.Id,
+                    editar: 0
+                };
+
+                $.ajax({
+                    url: '@Url.Action("GenerarContrato", "PurchaseOrder")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (result) {
+
+                        RefrescarGrid();
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Contrato generado correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 7000,
+                            stack: 6
+                        });
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+            }
+        }
+        else {
+            notification.show({
+                title: "Validacion",
+                message: "La cotización no ha sido aprobada"
+            }, "error");
+        }
+    }
+
+
+    function AprobarCotizacion(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 6) {
+        if (confirm('Esta seguro de aprobar esta compra?')) {
+            e.preventDefault();
+
+            var dataObject = {
+                PurchaseOrderId: dataItem.Id,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "PurchaseOrder")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Contrato generado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "<br/><br/>La orden de compra no ha sido aprobada"
+            }, "error");
+        }
+    }
+
+    function CreateCustomer(e) {
+        var notification = $("#notification").data("kendoNotification");
+        if (confirm('Esta seguro de crear este cliente?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                PurchaseOrderId: dataItem.Id,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("InsertCustomerFromSalesOrder", "Customer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    RefrescarGrid();
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Contrato generado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
+
+
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridPurchaseOrders").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+     //funcion para eliminar
+    function Delete(e) {
+        if (confirm('Esta seguro que desea eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "PurchaseOrder")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridPurchaseOrders").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Orden de Compra");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+<h3 class="text-themecolor">Orden de Compra</h3>
+
+<div id="example">
+
+
+
+    @(Html.Kendo().Grid<ERPMVC.Models.PurchaseOrder>()
+                                                                                                  .Name("gridPurchaseOrder")
+                                                                                                  .Columns(columns =>
+                                                                                                  {
+                                                                                                      columns.Command(command =>
+                                                                                                      {
+                                                                                                          command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                                                                                          command.Custom("VerDetalles").Text(" ").IconClass("fa fa-info-circle").Click("VerDetalles");
+                                                                                                          if (permisos.HasClaim("Inventarios.Ordenes de Compra.Acciones.Enviar Aprobacion", "true"))
+                                                                                                          {
+
+                                                                                                              command.Custom("EnviarAprobacion").Text(" ").IconClass("fa fa-paper-plane").Click("procesar");
+                                                                                                          }
+                                                                                                          if (permisos.HasClaim("Inventarios.Ordenes de Compra.Acciones.Aprobar", "true"))
+                                                                                                          {
+                                                                                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("procesar");
+                                                                                                          }
+                                                                                                          if (permisos.HasClaim("Inventarios.Ordenes de Compra.Acciones.Recibir", "true"))
+                                                                                                          {
+                                                                                                              command.Custom("Recibir").Text(" ").IconClass("fa fa-get-pocket").Click("procesar");
+                                                                                                          }
+                                                                                                      }).Width(120).Title("Acciones");
+
+                                                                                                      columns.Bound(p => p.Id).Title("Id").Width(60);
+                                                                                                      columns.Bound(p => p.PONumber).Title("N° Orden").Width(150);
+                                                                                                      columns.Bound(p => p.VendorName).Title("Proveedor").Width(150);
+                                                                                                      columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
+                                                                                                      columns.ForeignKey(p => p.BranchId, (System.Collections.IEnumerable)ViewData["Sucursal"], "BranchId", "BranchName").Title("Sucursal").Width(120);
+                                                                                                      columns.Bound(p => p.Estados.NombreEstado).Title("Estado").Width(170);
+                                                                                                      columns.Bound(p => p.DatePlaced).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(180);
+
+                                                                                                  })
+                                                                                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                                   .Clear()
+                                                                                                   .Contains("Contiene")
+                                                                                                   .DoesNotContain("No contiene")
+                                                                                                   .EndsWith("Termina con")
+                                                                                                   .IsEqualTo("Es igual a")
+                                                                                                   .IsNotEqualTo("No es igual a")
+                                                                                                   .IsNull("Es nulo")
+                                                                                                   .StartsWith("Inicia con")
+                                                                                             )
+                                                                                             .ForNumber(n => n
+                                                                                               .Clear()
+                                                                                               .IsEqualTo("Es igual a")
+                                                                                               .IsGreaterThan("Es mayor que")
+                                                                                               .IsLessThan("Es menor que")
+                                                                                               .IsNull("Es nulo")
+                                                                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                             )
+                                                                                             .ForDate(d => d
+                                                                                             .Clear()
+                                                                                             .IsEqualTo("Es igual que")
+                                                                                             .IsGreaterThan("Es mayor que")
+                                                                                             .IsLessThan("Es menor que")
+                                                                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                             .IsNotEqualTo("No es igual que")
+                                                                                              )
+                                                                                           ))
+                                                                                      .ToolBar(tools =>
+                                                                                      {
+                                                                                          // tools.Create();
+                                                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "DetallesInsert();" });
+
+                                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                                                                      })
+
+                                                                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                        .Sortable()
+                                                                                        .AutoBind(true)
+                                                                                        .Pageable()
+                                                                                        .Filterable()
+                                                                                        .Scrollable()
+                                                                                        // .ClientDetailTemplateId("template")
+                                                                                        .Pdf(pdf => pdf.FileName("PurchaseOrderReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                          .Excel(excel => excel.FileName("PurchaseOrderReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                        .Events(e => e.DataBound("dataBound"))
+                                                                                        //.Events(e=>e.Save("onsave"))
+                                                                                        .DataSource(dataSource =>
+
+                                                                                       dataSource
+                                                                                       //.Ajax()
+                                                                                       .WebApi()
+                                                                                        .ServerOperation(true)
+                                                                                        .Model(model =>
+                                                                                        {
+                                                                                            model.Id(p => p.Id);
+                                                                                            model.Field(p => p.Id).Editable(true);
+                                                                                            model.Field(p => p.Id).Editable(true);
+
+
+                                                                                        })
+                                                                                        .Events(events =>
+                                                                                        {
+
+                                                                                            events.Error("error_handler");
+                                                                                            //events.upda("EditHandler");
+
+                                                                                        })
+                                                                                        .Read(read => read.Action("GetPurchaseOrderbyEstado", "PurchaseOrder", new { pEstadoId = ViewData["EstadoId"] }))
+                                                                                        .Create(create => create.Action("Insert", "PurchaseOrder"))
+                                                                                        .Update(update => update.Action("Update", "PurchaseOrder", new { id = "{0}" }))
+                                                                                        .Destroy(destroy => destroy.Action("Delete", "PurchaseOrder", new { id = "{0}" }))
+                                                                                  )
+    )
+</div>
+
+@*<div id="salesorder" hidden>
+        @await Html.PartialAsync("pvwPurchaseOrder", new ERPMVC.DTO.PurchaseOrderDTO{ Id = 0, DatePlaced = DateTime.Now, BranchId = Convert.ToInt32(Context.Session.GetString("BranchId"))
+    })
+    </div>*@
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPurchaseOrder").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPurchaseOrder").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar  nuevo registro");
+    setRowButtonTooltip(".k-grid-VerDetalles", "Ver detalles");
+    setRowButtonTooltip(".k-grid-GenerarContrato", "Generar un contrato!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir OC");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-EnviarAprobacion", "Enviar Aprobacion");
+    setRowButtonTooltip(".k-grid-Recibir", "Recibir Inventario");
+    setRowButtonTooltip(".k-grid-Editar", "Editar OC");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-CrearCliente", "Crear cliente");
+
+
+    function procesar(e) {
+         debugger;
+        e.preventDefault();
+        //console.log(e.data.commandName);
+        clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            proceso : e.data.commandName
+        };
+        //9window.location.href = "PurchaseOrder/Details/"+dataItem.Id+"/"+e.data.commandName;
+        window.location.href = "@Url.Action("Details", "PurchaseOrder")?Id="+dataItem.Id+"&proceso="+e.data.commandName;
+        debugger;
+        @*$.ajax({
+            url: '@Url.Action("Details", "PurchaseOrder")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+                var txt = $(result);
+
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });*@
+    }
+
+    function Aprobar() {
+
+    }
+
+    function Recibir() {
+
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            var estado = Number(this.EstadoId);
+            switch (estado) {
+                case 3:
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-EnviarAprobacion').show();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').hide();
+                    break;
+                 case 4:
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-EnviarAprobacion').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').show();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').hide();
+                    break;
+                 case 5:
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-EnviarAprobacion').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').show();
+                    break;
+                 case 6:
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-EnviarAprobacion').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Eliminar').hide();
+                    //$('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').hide();
+                    break;
+                default:
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-EnviarAprobacion').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                    $('[data-uid=' + this.uid + ']').find('.k-grid-Recibir').hide();
+                    break;
+            }
+
+
+        })
+    }
+
+</script>
+
+
+
+

@@ -1,0 +1,189 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Tasa de Interés";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+
+    function AddFundingInterestRate() {
+
+        $('#ModalFundingInterestRate').find(':input').not(':submit').val('');
+        $('#ModalFundingInterestRate').modal('show');
+        $("#Id").val('0');
+        $("#Months").data("kendoDropDownList").value(0);
+        $("#Rate").val('');
+        $("#IdEstado").data("kendoDropDownList").value(0);
+    }
+
+
+    function EditFundingInterestRate(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 Id: dataItem.Id,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddFundingInterestRate", "FundingInterestRate")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    $("#numFundingInterestRate").html('');
+                    $("#numFundingInterestRate").html(result);
+
+                    $('#ModalFundingInterestRate').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridFundingInterestRate").getKendoGrid();
+        grid.dataSource.read();
+
+    } 
+
+       //funcion para eliminar
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "FundingInterestRate")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                //data: { Id: dataItem.UnitOfMeasureId },
+                success: function (data) {
+                    var grid = $("#gridFundingInterestRate").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Sucursal");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+<h3 class="text-themecolor">Tasa de Interés</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.FundingInterestRate>
+                      ()
+
+                        .Name("gridFundingInterestRate")
+
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditFundingInterestRate");
+                                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                //command.Destroy();
+                            }).Width(150).Title("Acciones");
+                            columns.Bound(p => p.Id).Title("No.").Width(140);
+                            columns.Bound(p => p.Descripcion).Title("Descripción").Width(200);
+                            columns.Bound(p => p.Rate).Title("Porcentaje de Tarifa").Width(150).Visible(false);
+                            columns.Bound(p => p.Months).Title("Mes").Width(150).ClientTemplate("#if(Months==1) { #Enero#}else if(Months==2) { #Febrero#}" +
+                                "else if(Months==3) { #Marzo#}else if(Months==4) { #Abril#}else if(Months==5) { #Mayo#}else if(Months==6) { #Junio#} " +
+                                "else if(Months==7) { #Julio#}else if(Months==8) { #agosto#}else if(Months==9) { #Septiembre#}else if(Months==10) { #Octubre#}" +
+                                "else if(Months==11) { #Noviembre#}else if(Months==12) { #Diciembre#}#").Filterable(true);
+                            columns.Bound(p => p.Rate).Title("Porcentaje de Tarifa").Width(150);
+                            columns.Bound(p => p.GroupKey).Title("Grupo de configuracion").Width(150);
+                            columns.Bound(p => p.Estado).Width(150);
+
+                        })
+
+
+                        .ToolBar(tools =>
+                        {
+
+                            //tools.Create();
+
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFundingInterestRate()"});
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("TasaDeInteresReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("TasaDeInteresReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "FundingInterestRate"))
+                       .Create(create => create.Action("Insert", "FundingInterestRate").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "FundingInterestRate").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "FundingInterestRate").Type(HttpVerbs.Post))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+)
+
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridFundingInterestRate").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridFundingInterestRate").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+<div id="numFundingInterestRate">
+    @await Html.PartialAsync("pvwAddFundingInterestRate", new ERPMVC.DTO.FundingInterestRateDTO { Id = 0 })
+</div>
+

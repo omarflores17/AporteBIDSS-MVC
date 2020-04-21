@@ -1,0 +1,186 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "State";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddState() {
+
+        $('#ModalState').find(':input').not(':submit').val('');
+        $('#ModalState').modal('show');
+        $("#StateId").val('0');
+
+
+
+
+    }
+
+
+    function EditState(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+
+
+
+        $.ajax({
+            url: '@Url.Action("pvwAddState", "State")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numState").html('');
+                $("#numState").html(result);
+
+
+                $('#ModalState').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridState").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    //funcion para eliminar
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "State")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                //data: { Id: dataItem.UnitOfMeasureId },
+                success: function (data) {
+                    var grid = $("#gridState").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Departamento");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+<h3 class="text-themecolor">Departamento</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.State>
+        ()
+
+        .Name("gridState")
+
+        .Columns(columns =>
+        {
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Custom("Editar").IconClass("fa fa-edit").Click("EditState").Text(" ");
+                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+            }).Width(250).Title("Acciones");
+            columns.Bound(p => p.Id).Width(150);
+            columns.Bound(p => p.Name).Width(170);
+        })
+
+
+        .ToolBar(tools =>
+        {
+
+            //tools.Create();
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddState()" });
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+        })
+        .Editable(e => e.Mode(GridEditMode.PopUp))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        .Pdf(pdf => pdf.FileName("StateReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+        .Excel(excel => excel.FileName("StateReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+        .DataSource(dataSource =>
+        dataSource
+        .WebApi()
+
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+            model.Field(p => p.Id).Editable(false);
+
+
+        })
+        .Events(events => events.Error("error_handler"))
+        .Read(read => read.Action("Get", "State"))
+        .Create(create => create.Action("Insert", "State").Type(HttpVerbs.Post))
+        .Update(update => update.Action("Update", "State").Type(HttpVerbs.Post))
+        .Destroy(destroy => destroy.Action("Delete", "State").Type(HttpVerbs.Post))
+
+        )
+        .Events(e =>
+        {
+            e.Save("onsave");
+
+        })
+)
+
+<div id="numState">
+    @await Html.PartialAsync("pvwAddState", new ERPMVC.DTO.StateDTO { Id = 0 })
+</div>
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridState").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridState").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>

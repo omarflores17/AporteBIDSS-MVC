@@ -1,0 +1,79 @@
+﻿@model ERPMVC.DTO.ContratoDTO
+@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Contratos";
+}
+
+
+
+<script>
+    function GetInvoiceId() {
+        return { ContratoId: $("#ContratoId").val() }
+    }
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h3 id="titulo" class="text-themecolor">Contrato</h3>
+            @(Html.Kendo().TabStrip()
+
+                                                                                                                                                                    .Name("tabDetalleProducto")
+                                                                                                                                                                    .Animation(animation =>
+                                                                                                                                                                        animation.Open(effect =>
+                                                                                                                                                                            effect.Fade(FadeDirection.In)))
+                                                                                                                                                                    .Items(tabstrip =>
+                                                                                                                                                                    {
+
+                                                                                                                                                                        tabstrip.Add().Text("Datos Generales")
+                                                                                                                                                                        //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                                                                                                                                        .Content(@<div id="ContratoDetail">@await Html.PartialAsync("pvwContrato", Model)</div>);
+
+                                                                                                                                                                      
+
+
+                                                                                                                                                                        tabstrip.Add().Text("Cuotas Pagadas")
+                                                                                                                                                                            //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                                                                                                                                            .LoadContentFrom("CuotasPagadas", "Contrato", (ERPMVC.Models.Contrato)ViewData["branch"]);
+
+
+
+
+                                                                                                                                                                    })
+                                                                                                                                                                    .SelectedIndex(0)
+            )
+        </div>
+
+
+
+
+    </div>
+</div>
+
+@*<div id="ContratoDetail">
+    @await Html.PartialAsync("pvwContrato", Model)
+</div>*@
+
+
+<script>
+    $(document).ready(function () {
+        PrepararGrid();
+       
+    });
+
+    function PrepararGrid() {
+        //clearsession();
+        var dataSource = $("#gridContratoDetail").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
+        // $('#ModalJournalEntry').find(':input').not(':submit').val('');
+        // $('#ModalJournalEntry').modal('show');
+        //$("#SalesOrderId").val('0');
+    }
+</script>

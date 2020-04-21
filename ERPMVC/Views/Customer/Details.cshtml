@@ -1,0 +1,199 @@
+﻿@model ERPMVC.Models.Customer
+@{
+    ViewData["Title"] = "Detalle de Cliente";
+}
+
+
+
+<script>
+
+    
+
+    function GetCustomerId() {
+        return { CustomerId: $("#CustomerId").val() }
+    }
+</script>
+
+
+<div class="container-fluid">
+    <div class="row">
+        
+        <div class="col-md-12">
+            <h3 id="titulo" class="text-themecolor">Cliente  @ViewData["customerName"]</h3>
+            @(Html.Kendo().TabStrip()
+
+                                                                                                                            .Name("tabDetalleCliente")
+                                                                                                                            .Animation(animation =>
+                                                                                                                                animation.Open(effect =>
+                                                                                                                                    effect.Fade(FadeDirection.In)))
+                                                                                                                            .Items(tabstrip =>
+                                                                                                                            {
+
+                                                                                                                                tabstrip.Add().Text("Datos Generales")
+                                                                                                                                .LoadContentFrom("pvwDatos", "Customer", (ERPMVC.Models.Customer)ViewData["customer"]);
+                                                                                                                                
+                                                                                                                                tabstrip.Add().Text("Histórico de Facturas/Contratos")
+                                                                                                                                .LoadContentFrom(@Url.Action("PurchaseCustomer", "Customer"));
+
+
+
+
+
+                                                                                                                            })
+                                                                                                                            .SelectedIndex(0)
+            )
+        </div>
+
+
+       
+    </div>
+</div>
+
+
+    <script>
+        function LimpiarDatos() {
+            $("#CustomerName").val(' ');
+            $("#CustomerLastName").val(' ');
+            $("#RTN").val(' ');
+            $("#Email").val(' ');
+            $("#Address").val(' ');
+            $("#DireccionEnvio").val(' ');
+            $("#Phone").val(' ');
+            $("#WorkPhone").val(' ');
+            $("#ContactPerson").val(' ');
+            $("#MontoIngresosAnuales").val('0');
+    }
+      
+        function SaveCustomer(e) {
+
+             var rtn = $("#RTN").val()
+            var contador = rtn.length
+            if (contador < 13) {
+                swal('Por favor completar el campo RTN/Identidad')
+                return;
+            }
+
+              
+            var phone = $("#Phone").val()
+            var telefono = phone.length
+            if (telefono < 8 || phone.indexOf("_") > -1 == true) {
+                swal('Por favor completar el campo teléfono')
+                return;
+            }
+    
+     
+                var cadena = $("#WorkPhone").val()
+                var cadenaLenght = cadena.lenght
+                if (cadenaLenght < 8 || cadena.indexOf("_") > -1 == true) {
+                    swal('Por favor completar el campo telefono Trabajo')
+                    return;
+
+                }
+            
+            debugger;
+          
+            var dataObject = {
+              
+              'CustomerId': $("#CustomerId").val() === "" ? "0" : $("#CustomerId").val(),
+              'CustomerName': $("#CustomerName").val(),
+              'CustomerLastName': $("#CustomerLastName").val(),
+              'RTN': $("#RTN").val(),
+              'CustomerTypeId': $("#CustomerTypeId").val() == null ? 0 : $("#CustomerTypeId").val(),
+              'Address': $("#Address").val(),
+              'City': $("#CityId").text(),
+              'State': $("#StateId").text(),
+              'CountryId': $("#CountryId").val(),
+              'ZipCode': $("#ZipCode").val() == null ? 0 : $("#ZipCode").val(),
+              'Phone': $("#Phone").val(),
+              'WorkPhone': $("#WorkPhone").val(),
+              //'Identidad': $("#Identidad").val(),
+              'Identidad': $("#RTN").val(),
+              'CustomerTypeId': $("#CustomerTypeId").val(),
+              'Email': $("#Email").val(),
+              'ContactPerson': $("#ContactPerson").val(),
+              'IdEstado': $("#IdEstadoCliente").val(),
+              'Estado': $("#IdEstadoCliente").data("kendoDropDownList").text(),
+              'GrupoEconomico': $("#GrupoEconomico").val(),
+              'MontoActivos': $("#MontoActivos").val(),
+              'MontoIngresosAnuales': $("#MontoIngresosAnuales").val() === "" ? "0" : $("#MontoIngresosAnuales").val(),
+              'Proveedor1': $("#Proveedor1").val(),
+              'Proveedor2': $("#Proveedor2").val(),
+              'ClienteRecoger': $("#ClienteRecoger").is(':checked'),
+              'EnviarlaMensajero': $("#EnviarlaMensajero").is(':checked'),
+              'ConfirmacionCorreo': $("#ConfirmacionCorreo").is(':checked'),
+              'DireccionEnvio': $("#DireccionEnvio").val(),
+              'PerteneceEmpresa': $("#PerteneceEmpresa").val(),
+              'CityId': $("#CityId").data("kendoDropDownList").value(),
+              'StateId': $("#StateId").val(),
+
+
+            };
+
+               var validator = $("#frmCustomer").data("kendoValidator");
+             if (validator.validate()) {
+           $.ajax({
+                url: '@Url.Action("SaveCustomer", "Customer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                   // $("#CustomerId").val(data.CustomerId);                   
+                    swal("Cliente", "Se han Guardado los cambios", "success");
+                    
+                        window.location.href = "@Url.Action("Details", "Customer")";
+                    
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                   swal(textStatus + ": " + XMLHttpRequest.responseText);                    
+                  //  swal("Error", "Ya existe un Cliente con esta identidad debe ser Unica" , "error");
+
+                }
+           });
+            }
+            else {
+              swal("Validación","Complete los Campos","info");
+            }
+
+                }
+                                        
+    </script>
+
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>
+
+
+
+<div class="container-fluid">
+
+</div>

@@ -1,0 +1,246 @@
+﻿@*<input type="text" deshabilitar="Usuario" value="test" />*@
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<h3 class="text-themecolor">Usuarios</h3>
+
+
+<p><strong>Para la contraseña: </strong>Minimo 6 caracteres/Mayusculas y minusculas</p>
+<p><strong>Ejemplo de contraseña: </strong>Bb4567!</p>
+
+<script>
+    function addmaskpassword(e) {
+        e.container.find(".k-edit-field:eq(2) > input").attr('type', 'password');
+    }
+</script>
+
+@section scripts{
+    <link href="~/js/pako_inflate.min.js" rel="stylesheet" />
+}
+
+@(Html.Kendo().Grid<ERPMVC.Models.ApplicationUser>
+                ()
+                .Name("grid")
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+            //command.Custom("Editar").Click("Edit");
+            command.Custom("Editar").Click("Edit");
+            //command.Edit();
+            command.Destroy();
+                    }).Width(200).Locked(true);
+                    columns.Bound(p => p.Id).Width(100).Visible(false);
+                    columns.Bound(p => p.UserName).Title("UserName").Width(250);
+                    columns.Bound(p => p.PasswordHash).Title("Contraseña").Visible(false);
+                    columns.Bound(p => p.Email).Title("Email (Username)").Width(250);
+                    columns.Bound(p => p.NormalizedEmail).Title("Correo").Visible(false);
+                    columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(250);
+                    columns.Bound(p => p.PhoneNumber).Title("Telefono").Width(150);
+                    columns.Bound(p => p.IsEnabled).Width(150);
+                    columns.Bound(p => p.UsuarioCreacion).Width(150);
+                    columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150);
+                    columns.Bound(p => p.UsuarioModificacion).Width(150);
+                    columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150);
+        //columns.Bound(p => p.Branch.BranchName).Width(150);
+        // columns.ForeignKey(p => p.Branch.BranchName, (System.Collections.IEnumerable)ViewData["Branches"], "BranchId", "BranchName").Title("Sucursal").Width(150);
+
+
+
+    })
+                .Events(e => e.Edit("addmaskpassword"))
+                .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+                ))
+                .ToolBar(tools =>
+                {
+                    //tools.Create().Text("Agregar");
+                    tools.ClientTemplateId("templateboton");
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+                })
+
+        .Editable(editable => editable.Mode(GridEditMode.InLine)).Editable(e => e.TemplateName("template-edit"))
+        .Sortable().Resizable(resize => resize.Columns(true))
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        /*.Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())*/
+        .Pdf(pdf => pdf
+        .AllPages()
+        .AvoidLinks()
+        .PaperSize("A4")
+        .Scale(0.8)
+        .Margin("2cm", "1cm", "1cm", "1cm")
+        .Landscape()
+        .RepeatHeaders()
+        .TemplateId("page-template")
+        .FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home"))
+        )
+        .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+        .DataSource(dataSource =>
+        dataSource
+
+        .WebApi()
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+            model.Field(p => p.Id).Editable(false);
+            model.Field(p => p.UserName).Editable(false);
+            model.Field(p => p.Email).Editable(true);
+            model.Field(p => p.NormalizedEmail).Editable(false);
+            model.Field(p => p.PhoneNumber).Editable(true);
+            model.Field(p => p.PasswordHash).Editable(true);
+
+
+        })/*
+.DataSource(dataSource => dataSource
+.Ajax()
+.PageSize(20)
+*/
+        .Events(events => events.Error("error_handler"))
+        .Read(read => read.Action("GetUsers", "Usuario"))
+        .Create(create => create.Action("pvwAddUser", "Usuario"))
+        .Update(update => update.Action("PutUsuario", "Usuario", new { id = "{0}" }))
+        .Destroy(destroy => destroy.Action("DeleteUsuario", "Usuario", new { id = "{0}" }))
+
+        )
+)
+    <script id="templateboton" type="text/x-kendo-template">
+        <a class="k-button k-button-icontext k-grid-add" href="#" onclick="Add()">Agregar</a>
+    </script>
+
+
+<script>
+    function Edit(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("pvwEdit", "Usuario")?UserId=" + dataItem.Id ;
+        debugger;
+        }
+        function OnRequestEnd_TopLinePriceGrid(e) {
+            console.log(e.type);
+            if (e.type === "update" || e.type === "create") {
+                var grid = $('#grid').data('kendoGrid');
+                grid.dataSource.read();
+            }
+        }
+
+        function Add(e) {
+
+        window.location.href = "@Url.Action("pvwAdd", "Usuario")" ;
+
+        }
+</script>
+
+<script type="x/kendo-template" id="page-template">
+    <div class="page-template">
+        <div class="header">
+            <div style="float: right">Page #: pageNum # of #: totalPages #</div>
+            Multi-page grid with automatic page breaking
+        </div>
+        <div class="watermark">Usuarios</div>
+        <div class="footer">
+            Pagina #: pageNum # de #: totalPages #
+        </div>
+    </div>
+</script>
+
+<style>
+    /* Page Template for the exported PDF */
+    .page-template {
+        font-family: "DejaVu Sans", "Arial", sans-serif;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+
+        .page-template .header {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            border-bottom: 1px solid #888;
+            color: #888;
+        }
+
+        .page-template .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            border-top: 1px solid #888;
+            text-align: center;
+            color: #888;
+        }
+
+        .page-template .watermark {
+            font-weight: bold;
+            font-size: 400%;
+            text-align: center;
+            margin-top: 30%;
+            color: #aaaaaa;
+            opacity: 0.1;
+            transform: rotate(-35deg) scale(1.7, 1.5);
+        }
+
+    /* Content styling */
+
+
+    .UserName {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 32px;
+        padding-left: 3px;
+    }
+
+    .Email {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 32px;
+        padding-left: 3px;
+    }
+
+    .BranchName {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 32px;
+        padding-left: 3px;
+    }
+</style>

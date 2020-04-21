@@ -1,0 +1,340 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Contratos";    
+}
+@{
+    var Linea = ViewData["Sucursal"] as IEnumerable<ERPMVC.Models.Branch>;
+    var Cliente = ViewData["Cliente"] as IEnumerable<ERPMVC.Models.Customer>;
+    var Fechapagar = ViewData["Fechapagar"] as IEnumerable<ERPMVC.Models.Contrato_plan_pagos>;
+}
+
+<script>
+
+    //-- Agregar --
+
+    function AgregarUoM() {
+
+         var dataObject = {
+             ContratoId: 0
+        };
+        debugger
+        $.ajax({
+            url: '@Url.Action("Details", "Contrato")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                window.location.href = "@Url.Action("Details", "Contrato")";
+                RefreshCotizacionesDetail();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+
+
+    }
+
+     //-- Ver Detalle --
+    
+    function DetalleUoM(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ContratoId: dataItem.ContratoId,
+            editar: 3,
+            ver: 3
+        };
+        $.ajax({
+            url: '@Url.Action("VerDetails", "Contrato")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                var txt = $(result);
+                
+              
+                $("#frmUnitOfMeasure").html('');
+                $("#frmUnitOfMeasure").html(result);
+                window.location.href = "@Url.Action("VerDetails", "Contrato")?ContratoId=" + dataItem.ContratoId;
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });
+        
+    }
+
+
+    //-- Editar --
+    
+    function EditUoM(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ContratoId: dataItem.ContratoId,
+            editar : 0
+        };
+        $.ajax({
+            url: '@Url.Action("Details", "Contrato")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                var txt = $(result);
+                $("#frmUnitOfMeasure").html('');
+                $("#frmUnitOfMeasure").html(result);
+                window.location.href = "@Url.Action("Details", "Contrato")?ContratoId=" + dataItem.ContratoId;
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });
+        
+    }
+
+
+       //--llama a plan de pago con el id de contrato--
+    function PagoUoM(e) {
+        debugger;
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ContratoId: dataItem.ContratoId
+        };
+        console.log("CONTRATO", dataObject)
+            $.ajax({
+               url: '@Url.Action("Details", "Contrato_movimientos")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    
+                    window.location.href = "@Url.Action("Details", "Contrato_movimientos")?ContratoId=" + dataItem.ContratoId;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal("Error", textStatus, "error");
+                }
+            });
+
+        
+    }
+
+    function PrimaUoM(e) {
+        debugger;
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ContratoId: dataItem.ContratoId
+            
+        };
+        $.ajax({
+            url: '@Url.Action("Details", "PagoPrima")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+
+                window.location.href = "@Url.Action("Details", "PagoPrima")?ContratoId=" + dataItem.ContratoId;
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+        });
+        
+    }
+
+         @*//--llama al pago de Prima con el id de contrato--
+    function PagoPrima(e) {
+        debugger;
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ContratoId: dataItem.ContratoId
+        };
+        window.location.href = "@Url.Action("Details", "Contrato_movimientos")?ContratoId=" + dataItem.ContratoId;
+
+         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Details", "PagoPrima")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    
+                    window.location.href = "@Url.Action("Details", "PagoPrima")?ContratoId=" + dataItem.ContratoId;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal("Error", textStatus, "error");
+                }
+            });
+
+        
+    }*@
+
+
+    function RefrescarGrid() {
+        var grid = $("#gridUoM").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+    //funcion para eliminar
+    function Delete(e) {
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "Contrato")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridUoM").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Contrato");
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal("Error", textStatus, "error");
+                }
+            });
+        }
+    }
+
+    
+</script>
+
+<h3 class="text-themecolor">Contratos</h3>
+
+
+@(Html.Kendo().Grid<ERPMVC.DTO.ContratoDTO>
+                ()
+                .Name("gridUoM")
+                .Columns(columns =>
+                {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Detalle").Text(" ").IconClass("fa fa-list-alt").Click("DetalletUoM");
+                            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditUoM");
+                            //command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                            command.Custom("Prima").Click("PrimaUoM").IconClass("fa fa-money").Text(" ");  
+                            command.Custom("Pagos").Click("PagoUoM").IconClass("fa fa-credit-card-alt").Text(" ");
+                            command.Custom("Detalle").Click("DetalleUoM").IconClass("fa fa-list-alt").Text(" ");
+                        }).Width(160).Title("Acciones");
+                    
+                    columns.Bound(p => p.ContratoId).Width(80).Title("No");
+                    columns.ForeignKey(p => p.BranchId,(System.Collections.IEnumerable)ViewData["Sucursal"], "BranchId", "BranchName").Title("Sucursal").Width(120);
+                    columns.ForeignKey(p => p.CustomerId, (System.Collections.IEnumerable)ViewData["Cliente"], "CustomerId", "CustomerName").Title("Cliente").Width(150);
+                    columns.ForeignKey(p => p.CustomerId, (System.Collections.IEnumerable)ViewData["Cliente"], "CustomerId", "Identidad").Title("Identidad").Width(120);
+                    columns.ForeignKey(p => p.ContratoId, (System.Collections.IEnumerable)ViewData["Fechapagar"], "ContratoId", "Fechacuota").Title("Fecha Pago").Width(120);
+                    columns.Bound(p => p.TotalContrato).Width(100).Title("Total").Format("{0:C}");
+                    columns.Bound(p => p.SaldoActual).Width(130).Title("Nuevo Saldo").Format("{0:C}");
+                    columns.Bound(p => p.NombreEstado).Width(100).Title("Estado");
+
+                })
+                .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+
+
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+                ))
+                .ToolBar(tools =>
+                {
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "AgregarUoM();" });
+                    //tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                    //tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("VendorTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("VendorTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    //model.Id(p => p.ContratoId);
+                    //model.Field(p => p.ContratoId).Editable(false);
+
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("GetContrato", "Contrato"))
+                .Create(create => create.Action("Insert", "Contrato"))
+                .Update(update => update.Action("Update", "Contrato", new { id = "{0}" }))
+                )
+)
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridUoM").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridUoM").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Registro");
+    setRowButtonTooltip(".k-grid-Pagos", "Pagar Registro");
+    setRowButtonTooltip(".k-grid-Prima", "Pagar Prima");
+    setRowButtonTooltip(".k-grid-Detalle", "Ver Detalle");
+  
+</script>

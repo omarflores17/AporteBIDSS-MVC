@@ -1,0 +1,20 @@
+﻿
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Consultas Generales";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERPMVC.Models.Contrato
+
+
+<script>
+    function GetInvoiceId() {
+        return { ContratoId: $("#ContratoId").val() }
+    }
+</script>
+
+<div id="ContratoDetail">
+
+    @await Html.PartialAsync("Consulta_General_Cuentas", new ERPMVC.Models.Contrato { ContratoId = 0 })
+</div>
+

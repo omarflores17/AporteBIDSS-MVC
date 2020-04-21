@@ -1,0 +1,381 @@
+﻿@model ERPMVC.DTO.FundingInterestRateDTO
+@using Kendo.Mvc.UI
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+        {"required","Valor requerido" }
+    };
+    
+}
+
+<style>
+</style>
+<script>
+    ///Lista meses del año
+    $(document).ready(function () {
+
+        var data = [
+            { text: "Seleccionar mes", value: "0" },
+            { text: "Enero", value: "1" },
+            { text: "Febrero", value: "2" },
+            { text: "Marzo", value: "3" },
+            { text: "Abril", value: "4" },
+            { text: "Mayo", value: "5" },
+            { text: "Junio", value: "6" },
+            { text: "Julio", value: "7" },
+            { text: "Agosto", value: "8" },
+            { text: "Septiembre", value: "9" },
+            { text: "Octubre", value: "10" },
+            { text: "Noviembre", value: "11" },
+            { text: "Diciembre", value: "12" }
+        ];
+
+        // create DropDownList from input HTML element
+        $("#Months").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: data,
+            index: 0,
+            //change: onChange
+        });
+        //var Rate = [
+        //        {text: "Seleccionar la tarifa", value: "0" },
+        //        {text: "10", value: "1" },
+        //        {text: "20", value: "2" },
+        //        {text: "30", value: "3" },
+        //        {text: "40", value: "4" },
+        //        {text: "50", value: "5" },
+        //        {text: "60", value: "6" },
+        //        {text: "70", value: "7" },
+        //        {text: "80", value: "8" },
+        //        {text: "90", value: "9" },
+        //        {text: "100", value: "10" }
+        //];
+        //// create DropDownList from input HTML element
+        //    $("#Rate").kendoDropDownList({
+        //        dataTextField: "text",
+        //    dataValueField: "value",
+        //    dataSource: Rate,
+        //    index: 0,
+        //    //change: onChange
+        //});
+        $("#MesAlert").prop("hidden", true);
+    });
+
+    function validarMeses() {
+        var Months = $("#Months").val();
+        //console.log("Valor Mes", Meses);
+        if (Months == 0 || $("#Months").data("kendoDropDownList").text() == "Seleccionar Mes") {
+            $("#MesAlert").show();
+        }
+        else {
+            $("#MesAlert").hide();
+        }
+    }
+
+    //function validarRate() {
+    //    var Rate = $("#Rate").val();
+    //    if (Rate == 0 || $("#Rate").data("kendoDropDownList").text() == "Seleccionar Tarifa") {
+    //        $("#RateAlert").show();
+    //    }
+    //    else {
+    //        $("#RateAlert").hide();
+    //    }
+    //}
+
+
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "Id" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+
+</script>
+
+<div id="ModalFundingInterestRate" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tasa de Interés</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmFundingInterestRate" kendo-validator="true" kendo-message="messages" 
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveFundingInterestRate"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id</label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Months" class=" control-label" style="width:100%">Mes</label>
+                                                    <input type="text" asp-for="Months" id="Months" name="Months" style=" width: 100%" autocomplete="off" maxlength="9" required data-required-msg="El Mes es requerido." onchange="validarMeses()" />
+                                                    <span asp-validation-for="Months" class="text-danger"></span>
+                                                    <span id="MesAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span>El mes es requerido.</span>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="control-label">Grupo</label>
+                                                    <kendo-dropdownlist name="GrupoConfiguracionInteresesId"
+                                                                        for="@Model.GrupoConfiguracionInteresesId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Grupo de Intereses"
+                                                                        datatextfield="Nombre"
+                                                                        datavaluefield="Id"
+                                                                        required data-required-msg="El grupo es requerido"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "GrupoConfiguracionIntereses")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="GrupoConfiguracionInteresesId" class="text-danger"></span>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class=" control-label" style="width:100%">Estado</label>
+                                                    <input type="text" asp-for="Estado" name="Estado" class="form-control" autocomplete="off" style="width:100%" onchange="PrevenirCambios()" />
+                                                    <span asp-validation-for="Estado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        required data-required-msg="El Estado es requerido."
+                                                                        style=" width: 100%"
+                                                                        onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Rate" class="control-label" style="width:100%">Porcentaje de Tarifa</label>
+                                                    <kendo-numerictextbox name="Rate"
+                                                                          format="#.## '%'"
+                                                                          min="0"
+                                                                          decimals="2"
+                                                                          max="100"
+                                                                          maxlength="5"
+                                                                          required data-required-msg="El Porcentaje de Tarifa es requerido."
+                                                                          style="width:100%"
+                                                                          value="Model.Rate" />
+                                                    <span asp-validation-for="Rate" class="text-danger"></span>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Descripcion" class=" control-label" style="width:100%">Descripción</label>
+                                                    <textarea type="text" asp-for="Descripcion" id="Descripcion" name="Descripcion" onkeyup="this.value=Numeros(this.value)" class="form-control" required data-required-msg="La Descripción es requerida." maxlength="300" autocomplete="off" style="width:100%" onchange="PrevenirCambios()"></textarea>
+                                                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button id="btnFundingInterestRate" class="btn btn-success" type="button" onclick="SaveFundingInterestRate()"> Guardar </button>
+                                            <button type="button" class="btn btn-default" onclick="CerrarModal()">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+     function Numeros(string) {//solo letras y numeros
+        var out = '';
+        //Se añaden las letras validas
+        var filtro = 'abcdefghijklmnñopqrstuvwxyzáéíóúABCDEFGHIJKLMNÑOPQRSTUVWXYZ.-()%" ';//Caracteres validos
+
+ 
+
+        for (var i = 0; i < string.length; i++)
+            if (filtro.indexOf(string.charAt(i)) != -1)
+                out += string.charAt(i);
+        return out;
+    }
+    function pierdeFoco(e) {
+        var valor = e.value.replace(/^0*/, '');
+        e.value = valor;
+    }
+
+    function Validar() {
+        if ($('#Months').val().length == 0) {
+            alert('Seleccione un mes');
+            $("#Months").data("kendoDropDownList").value(0);
+            return false;
+        }
+    }
+
+    //Funcion no aceptar espacios en el textbox
+    //document.addEventListener("input", function () {
+    //    $("input[type='text']", 'form').each(function () {
+    //        _id = $(this).attr("id");
+    //        _value = document.getElementById(_id).value;
+    //        document.getElementById(_id).value = _value.trimStart();
+    //    });
+    //})
+
+    //function ValidarCampos(e) {
+    //    debugger;
+    //    var descripcion = $("#Descripcion").val();
+    //    if (descripcion == null || descripcion.length == 0 || descripcion == " ") {
+    //    alert('ERROR: El campo nombre no debe ir vacío o lleno de solamente espacios en blanco');
+    //    return false;
+    //    }
+    //}
+
+
+
+    var changes = false;
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Aceptar"
+              
+                //closeOnConfirm: false
+            }, function () {
+                $('#ModalFundingInterestRate').modal('hide');
+            });
+        } else {
+            $('#ModalFundingInterestRate').modal('hide');
+        }
+    }
+
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+  
+
+        function SaveFundingInterestRate(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+            $("#btnFundingInterestRate").hide();
+            $("#btnFundingInterestRate").prop("disabled", true);
+
+            var displayedData = $("#gridFundingInterestRate").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'Descripcion': $("#Descripcion").val(),
+                'Months': $("#Months").val(),
+                'Rate': $("#Rate").val(),
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                'GrupoConfiguracionInteresesId': $("#GrupoConfiguracionInteresesId").val(),
+                'GroupKey': $("#GrupoConfiguracionInteresesId").data("kendoDropDownList").text(),
+                '_FundingInterestRate': displayedData,
+            };
+
+
+            var validator = $("#frmFundingInterestRate").data("kendoValidator");
+                 var status = $(".status");
+
+            console.log('VERIFICAR',dataObject)
+                if (validator.validate()) {
+                    $.ajax({
+                        url: '@Url.Action("SaveFundingInterestRate", "FundingInterestRate")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Tasa de Interés", "Almacenado con éxito", "success");
+                            RefrescarGrid();
+
+                            $('#ModalFundingInterestRate').modal('hide');
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                    //Cierras tu ventana
+                                }
+                            }, false);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            //    console.log('VERIFICAR')
+
+                            //notification.show({
+                            //    title: "Validacion",
+                            //    message: textStatus + ": " + XMLHttpRequest.responseText
+                            //}, "error");
+                           // swal(textStatus + ": " + XMLHttpRequest.responseText);
+                           // swal("Tasa de Interés", "Ha ocurrido un error", "error");
+                            swal("Error", "Ya existe una tasa de interés para ese mes", "error");
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Datos invalidos en el formulario!")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnFundingInterestRate").show();
+            $("#btnFundingInterestRate").prop("disabled", false);
+    }
+
+    //validar espacios
+    // function ValidarEspacios(e){
+   // if (document.frmFundingInterestRate.Descripcion.value.split(' ').length >= 2) {
+     //   alert('No se permite ingresar mas de dos espacios juntos');
+       // document.frmFundingInterestRate.Descripcion.value = '';
+    //}
+    // }
+</script>

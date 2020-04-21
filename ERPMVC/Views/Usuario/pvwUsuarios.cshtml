@@ -1,0 +1,156 @@
+﻿@model ERPMVC.Models.ApplicationUser
+
+<h4>Usuarios</h4>
+<hr />
+<div class="card card-outline-inverse">
+    <div class="card-header card-outline-inverse">
+        <h4>Agregar Usuario</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form asp-action="PutUsuario" asp-controller="Usuario" id="ApplicationUserForm">
+                    <div asp-validation-summary="ModelOnly" class="form-control-feedback"></div>
+                    <div class="form-group">
+                        <label>Sucursal</label>
+                        @(Html.Kendo().DropDownList()
+                                                                .Name("BranchId")
+                                                                .DataTextField("BranchName")
+                                                                .DataValueField("BranchId")
+                                                                .DataSource(source =>
+                                                                {
+                                                                    source.Read(read =>
+                                                                    {
+                                                                        read.Action("GetBranchList", "Branch");
+                                                                    });
+                                                                })
+                                                                .HtmlAttributes(new { style = "width: 100%" })
+                        )
+                        <span asp-validation-for="BranchId" class="form-control-feedback"></span>
+
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="IsEnabled"></label>
+                        <input asp-for="IsEnabled" class="form-control" />
+                        <span asp-validation-for="IsEnabled" class="form-control-feedback" data-for="IsEnabled"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PasswordHash"></label>
+                        <input asp-for="PasswordHash" class="form-control" />
+                        <span asp-validation-for="PasswordHash" class="form-control-feedback" data-for="PasswordHash"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Utimo cambio de Contrasena</label>
+                        <kendo-datetimepicker for="LastPasswordChangedDate" readonly />
+                        <span asp-validation-for="LastPasswordChangedDate" class="form-control-feedback" data-for="LastPasswordChangedDate"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="FechaCreacion"></label>
+                        <kendo-datetimepicker for="FechaCreacion" />
+                        <span asp-validation-for="FechaCreacion" class="form-control-feedback" data-for="FechaCreacion"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="FechaModificacion"></label>
+                        <kendo-datetimepicker for="FechaModificacion" />
+                        <span asp-validation-for="FechaModificacion" class="form-control-feedback" data-for="FechaModificacion"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="UsuarioCreacion"></label>
+                        <input asp-for="UsuarioCreacion" class="form-control" />
+                        <span asp-validation-for="UsuarioCreacion" class="form-control-feedback" data-for="UsuarioCreacion"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="UsuarioModificacion"></label>
+                        <input asp-for="UsuarioModificacion" class="form-control" />
+                        <span asp-validation-for="UsuarioModificacion" class="form-control-feedback" data-for="UsuarioModificacion"></span>
+                    </div>
+                    <input type="hidden" asp-for="Id" />
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="form-control-feedback" data-for="UserName"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="NormalizedUserName"></label>
+                        <input asp-for="NormalizedUserName" class="form-control" />
+                        <span asp-validation-for="NormalizedUserName" class="form-control-feedback" data-for="NormalizedUserName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="form-control-feedback" data-for="Email"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="NormalizedEmail"></label>
+                        <input asp-for="NormalizedEmail" class="form-control" />
+                        <span asp-validation-for="NormalizedEmail" class="form-control-feedback" data-for="NormalizedEmail"></span>
+                    </div>
+                    <div class="form-group">
+                        @Html.Kendo().CheckBoxFor(m => m.EmailConfirmed)
+                        <label>Confimacion del Correo</label>
+                        <span asp-validation-for="EmailConfirmed" class="form-control-feedback" data-for="EmailConfirmed"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="SecurityStamp"></label>
+                        <input asp-for="SecurityStamp" class="form-control" />
+                        <span asp-validation-for="SecurityStamp" class="form-control-feedback" data-for="SecurityStamp"></span>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label asp-for="ConcurrencyStamp"></label>
+                        <input asp-for="ConcurrencyStamp" class="form-control" />
+                        <span asp-validation-for="ConcurrencyStamp" class="form-control-feedback" data-for="ConcurrencyStamp"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Numero de Telefono</label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="form-control-feedback" data-for="PhoneNumber"></span>
+                    </div>
+                    <div class="form-group">
+                        @Html.Kendo().CheckBoxFor(m => m.PhoneNumberConfirmed).
+                        <label>Confirmacion de Numero de Telefono</label>
+                        <span asp-validation-for="PhoneNumberConfirmed" class="form-control-feedback" data-for="PhoneNumberConfirmed"></span>
+                    </div>
+                    <div class="form-group">
+                        @Html.Kendo().CheckBoxFor(m => m.TwoFactorEnabled)
+                        <label>Autenticacion en dos Pasos</label>
+                        <span asp-validation-for="TwoFactorEnabled" class="form-control-feedback" data-for="TwoFactorEnabled"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Bloqueo de Usuario finaliza el</label>
+                        <input asp-for="LockoutEnd" class="form-control" readonly />
+                        <span asp-validation-for="LockoutEnd" class="form-control-feedback" data-for="LockoutEnd"></span>
+                    </div>
+                    <div class="form-group">
+                        @Html.Kendo().CheckBoxFor(m => m.LockoutEnabled)
+                        <label>Bloquear Usuario</label>
+                        <span asp-validation-for="LockoutEnabled" class="form-control-feedback" data-for="LockoutEnabled"></span>
+                    </div>
+                    <div class="form-group">
+                        <label> Fallos de Ingreso</label>
+                        <kendo-numerictextbox for="AccessFailedCount" readonly />
+                        <span asp-validation-for="AccessFailedCount" class="form-control-feedback" data-for="AccessFailedCount"></span>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Guardar Cambios" class="btn btn-success" />
+                        <a asp-action="Index" class="btn btn-secondary">Regresar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="unitofmeasure">
+    @await Html.PartialAsync("pvwUsuarios", new ERPMVC.Models.UnitOfMeasure())
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#ApplicationUserForm").kendoValidator({
+            // You can define your custom rules here:
+            //rules: {}
+        });
+    })
+</script>

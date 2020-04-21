@@ -1,0 +1,104 @@
+﻿@model ERPMVC.DTO.ContratoDTO
+@{
+}
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.DTO.ContratoDTO>
+                        ()
+                        .Name("gridReporteMoraTienda")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(p => p.Branch.BranchName).Width(200).Title("Sucursal");
+                            columns.Bound(p => p.Fecha).Width(200).Title("Fecha");
+                            columns.Bound(p => p.ContratoId).Width(120).Title("Id");
+                            columns.Bound(p => p.Customer.RTN).Width(200).Title("Identidad");
+                            columns.Bound(p => p.Customer.CustomerName).Width(200).Title("Cliente");
+                            columns.Bound(p => p.TotalContrato).Width(200).Title("Valor Contrato");
+                            columns.Bound(p => p.ValorPrima).Width(200).Title("Valor Prima");
+                            columns.Bound(p => p.SaldoActual).Width(200).Title("Saldo Actual");
+                            columns.Bound(p => p.Plazo).Width(150).Title("Plazo");
+                            columns.Bound(p => p.ValorCuota).Width(100).Title("Valor Cuota");
+                            columns.Bound(p => p.Fecha_de_vencimiento).Width(200).Title("Fecha Finaliza");
+                            columns.Bound(p => p.TotalPagado).Width(200).Title("Total Pagado");
+                            columns.Bound(p => p.meses).Width(200).Title("Meses trancurridos");
+                            columns.Bound(p => p.Cuotas_pagadas).Width(200).Title("Cuotas Pagadas");
+                            columns.Bound(p => p.Dias_mora).Width(200).Title("Dias de Mora");
+                            columns.Bound(p => p.Cuotas_pendiente).Width(200).Title("Cuotas Pendientes");
+                            columns.Bound(p => p.Difmeses).Width(200).Title("Diferencia de meses");
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                        .ToolBar(tools =>
+                        {
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("BranchReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("BranchReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetContratoByBranch", "Contrato").Data("GetData"))
+
+                        )
+
+        )
+
+    </div>
+</div>
+
+<script>
+    function GetData() {
+        return {
+            Dias:$('input[name=Dias]:checked').val(),
+            Fecha1: $("#Fecha1").getKendoDateTimePicker().value().toJSON(),
+            Fecha2: $("#Fecha2").getKendoDateTimePicker().value().toJSON(),
+        }
+    }
+</script>

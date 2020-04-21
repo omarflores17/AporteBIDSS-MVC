@@ -1,0 +1,184 @@
+﻿@model ERPMVC.Models.Vendor
+
+<script>
+    
+
+    function GetVendorId() {
+        return { VendorId: $("#VendorId").val() }
+    }
+    function BackVendor() {
+        window.location.href = "@Url.Action("Index", "Vendor")";
+    }
+</script>
+
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h3 id="titulo" class="text-themecolor">Proveedores  @ViewData["VendorName"]</h3>
+            @(Html.Kendo().TabStrip()
+        
+                 .Name("tabDetalleProveedor")
+                 .Animation(animation =>
+                     animation.Open(effect =>
+                         effect.Fade(FadeDirection.In)))
+                 .Items(tabstrip =>
+                 {
+        
+                 tabstrip.Add().Text("Historico de compras")
+                     //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                     .LoadContentFrom(Url.Action("PurchaseVendor", "Vendor"));
+        
+                 tabstrip.Add().Text("Productos")
+                     //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                     .LoadContentFrom(@Url.Action("ListProduct", "Vendor"));
+        
+                     tabstrip.Add().Text("Gastos/Inversiones")
+                     //Productos que se van a almacenar , hay un listado de productos que no se pueden almacenar           //
+                     //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                     .LoadContentFrom(@Url.Action("Index", "CustomerProduct"));
+        
+                
+        
+        
+        
+        
+             })
+                 .SelectedIndex(0)
+            )
+        </div>
+
+
+     
+    </div>
+</div>
+<script>
+    function SaveVendor() {
+          $("#btnGuardarVendor").hide();
+        $("#btnGuardarVendor").prop("disabled", true);
+
+          var dataObject = {
+              'VendorId': $("#VendorId").val(),
+              'VendorName': $("#VendorName").val(),
+              'VendorTypeId': 1,
+              'Address': $("#Address").val(),
+              'City': $("#City").val(),
+              'State': $("#State").val(),
+              'ZipCode': $("#ZipCode").val(),
+              'Phone': $("#Phone").val(),
+              'Email': $("#Email").val(),
+              'ContactPerson': $("#ContactPerson").val(),
+              'FechaCreacion': $("#FechaCreacion").val(),
+              'FechaModificacion': $("#FechaModificacion").val(),
+              'UsuarioCreacion': $("#UsuarioCreacion").val(),
+              'UsuarioModificacion': $("#UsuarioModificacion").val(),
+              'CompanyReferenceone': "aaaaaa",
+              'CompanyReferencetwo': "aaaa",
+              'CurrencyId': 1,
+              'Estado': $("#Estado").val(),
+              'IdEstado': 1,
+              'Identidad': "00000000",
+              'PhoneReferenceone': "99999999",
+              'PhoneReferencetwo': "99999999",
+              'QtyMin': $("#QtyMin").val(),
+              'QtyMonth': $("#QtyMonth").val(),
+              'RTN': $("#RTN").val(),
+          };
+
+       console.log('VERIFICAR',dataObject);
+
+           $.ajax({
+                url: '@Url.Action("SaveVendor", "Vendor")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    console.log('VERIFICAR', dataObject)
+
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/> Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        showHideTransition: 'slide',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                    $("#btnGuardarVendor").show();
+                    $("#btnGuardarVendor").prop("disabled", false);
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+
+
+      }
+</script>
+
+<style>
+    /*.modal-backdrop {
+
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height:1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051;
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }*/
+
+    /*#tabFirmasAutorizadas .k-tabstrip ul li.k-item {
+        width: 190px;
+    }*/
+
+    /*.k-tabstrip ul li.k-item, li.k-tabstrip-items {
+        width: 140px;
+    }
+
+
+    .k-link {
+        width: 185px;
+    }*/
+</style>
+
+
+
+
+
+<script>
+    $("#tabDetalleProveedor").kendoTabStrip({
+        collapsible: true
+    });
+
+    $("#tabDetalleProveedor").width($("#tabDetalleProveedor").innerWidth());
+
+    console.log($("#tabDetalleProveedor").innerWidth());
+</script>

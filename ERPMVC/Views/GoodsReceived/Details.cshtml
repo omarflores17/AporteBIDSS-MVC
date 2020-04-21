@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Detalle Entradas";
+}
+
+
+
+<script>
+
+
+
+    function GetGoodsReceivedId() {
+        return { GoodsReceivedId: $("#GoodsReceivedId").val() }
+    }
+</script>
+
+
+
+
+        <div id="goodsReceived">
+            @await Html.PartialAsync("pvwGoodsReceived", new ERPMVC.DTO.GoodsReceivedDTO { GoodsReceivedId = 0, DocumentDate = DateTime.Now, OrderDate = DateTime.Now, ExpirationDate = DateTime.Now
+            ,BranchId = Convert.ToInt64(Context.Session.GetString("BranchId")) })
+        </div>
+
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>
+
+
+
+<div class="container-fluid">
+
+</div>

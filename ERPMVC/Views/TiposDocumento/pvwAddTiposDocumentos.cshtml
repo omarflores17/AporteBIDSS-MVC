@@ -1,0 +1,176 @@
+﻿@model ERPMVC.DTO.TiposDocumentoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalTiposDocumento" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tipo Documento Fiscal</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmTiposDocumentos" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTiposDocumento"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="IdTipoDocumento" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="IdTipoDocumento" name="IdTipoDocumento" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="IdTipoDocumento" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Codigo" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Codigo" maxlength="2" name="Codigo" class="form-control" onKeyPress="return soloNumeros(event)" required data-required-msg="El Código es requerido." autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Codigo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Descripcion" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Descripcion" maxlength="30" name="Descripcion" class="form-control" required data-required-msg="La Descripción es requerida." autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado" data-val-required="El Estado es requerido."
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button id="btnTiposDocumento" class="btn btn-success" type="button" onclick="SaveTiposDocumento()">Guardar</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" name="close">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#Codigo").on('paste', function (e) {
+            e.preventDefault();
+        });
+    });
+
+        
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridTiposDocumento").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+        function SaveTiposDocumento(e) {
+            $("#btnTiposDocumento").hide();
+            $("#btnTiposDocumento").prop("disabled", true);
+
+            var displayedData = $("#gridTiposDocumento").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'IdTipoDocumento': $("#IdTipoDocumento").val()===""?"0":$("#IdTipoDocumento").val(),
+                           'Codigo': $("#Codigo").val(),
+                           'Descripcion': $("#Descripcion").val(),
+                           'IdEstado': $("#IdEstado").val(),
+                           'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                           '_TiposDocumentos': displayedData
+            };
+
+            var validator = $("#frmTiposDocumentos").data("kendoValidator");
+                 var status = $(".status");
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveTiposDocumento", "TiposDocumento")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Tipo Documento", "Guardado Satisfactoriamente", "success");
+                            RefrescarGrid();
+                            $('#ModalTiposDocumento').modal('hide');
+
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                }
+                            }, false);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal(textStatus + ": " + XMLHttpRequest.responseText);
+                        }
+                    });
+
+                }
+                else {
+                    swal("Validación", "Ingrese todos los datos en el formulario!", "info");
+                }
+
+            $("#btnTiposDocumento").show();
+            $("#btnTiposDocumento").prop("disabled", false);
+    }
+</script>

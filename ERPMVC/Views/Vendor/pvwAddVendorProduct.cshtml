@@ -1,0 +1,164 @@
+﻿@model ERPMVC.Models.VendorProduct
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+        //$('#btnprueba').val("");
+</script>
+
+
+
+
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmBank" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveBank"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="VendorId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="VendorId" name="VendorId" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="VendorId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="ProductId" class="control-label" style="width:100%">Añadir nuevo producto</label>
+                                                <div class="input-group">
+                                                    <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="ProductId"
+                                                                        id="ProductId"
+                                                                        option-label="Seleccione el Producto"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        data-validate="false"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetProduct", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                                                    <span class="input-group-btn">
+                                                        <button class="btn btn-info" id="btnBank" onclick="SaveBank()" type="button"> Añadir</button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+     
+
+<script>
+    $(document).ready(function () {
+        var ProductId = $("#ProductId").data("kendoDropDownList");
+        ProductId.noData[0].innerText = "Datos no encontrados.";
+    });
+
+    function RefrescarGrid() {
+        debugger;
+        var grid = $("#gridNumeracionProduct").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+        $("#ProductId").data("kendoDropDownList").value(0);
+
+    }
+  
+        function SaveBank(e) {
+            debugger;
+            if ($("#ProductId").val() != "") {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnBank").hide();
+                $("#btnBank").prop("disabled", true);
+
+
+                var dataObject = {
+                    'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                    'VendorId': $("#VendorId").val(),
+                    'ProductId': $("#ProductId").val(),
+                };
+
+
+                var validator = $("#frmBank").data("kendoValidator");
+                var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveVendorProduct", "VendorProduct")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            $("#VendorId").val(data.VendorId);
+                            swal("Producto", "Se registro el producto", "success");
+
+                            RefrescarGrid();
+
+                            $('#ModalBank').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal(textStatus + ": " + XMLHttpRequest.responseText);
+                            //swal("Error", "Ya se ingreso este producto", "error");
+                            RefrescarGrid();
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+                $("#btnBank").show();
+                $("#btnBank").prop("disabled", false);
+            }
+            else {
+                swal("Validación", "Seleccione un nuevo producto para añadir!", "info");
+            }
+    }
+</script>

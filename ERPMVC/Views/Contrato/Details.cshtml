@@ -1,0 +1,44 @@
+﻿@model ERPMVC.DTO.ContratoDTO
+@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Contrato";
+}
+
+
+
+<script>
+    function GetInvoiceId() {
+        return { ContratoId: $("#ContratoId").val() }
+    }
+</script>
+
+
+<div id="ContratoDetail">
+    @await Html.PartialAsync("pvwContrato", Model)
+</div>
+
+
+
+<div class="container-fluid">
+
+</div>
+<script>
+    $(document).ready(function () {
+        PrepararGrid();
+    });
+
+    function PrepararGrid() {
+        //clearsession();
+        var dataSource = $("#gridContratoDetail").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
+        // $('#ModalJournalEntry').find(':input').not(':submit').val('');
+        // $('#ModalJournalEntry').modal('show');
+        //$("#SalesOrderId").val('0');
+    }
+</script>

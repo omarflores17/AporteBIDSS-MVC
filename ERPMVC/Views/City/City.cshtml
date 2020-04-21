@@ -1,0 +1,192 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Ciudad";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddCity() {
+
+        $('#ModalCity').find(':input').not(':submit').val('');
+        $('#ModalCity').modal('show');
+        $("#CityId").val('0');
+
+
+
+
+    }
+
+
+    function EditCity(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddCity", "City")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numCity").html('');
+                $("#numCity").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalCity').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridCity").getKendoGrid();
+        grid.dataSource.read();
+    }
+     //funcion para eliminar
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "City")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                //data: { Id: dataItem.UnitOfMeasureId },
+                success: function (data) {
+                    var grid = $("#gridCity").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Ciudad");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+
+</script>
+
+<h3 class="text-themecolor">Ciudad</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.City>
+                ()
+
+                .Name("gridCity")
+
+                .Columns(columns =>
+                {
+                    columns.Command(command =>
+                    {
+            //command.Custom("Ver detalles").Click("Detalles");
+            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCity");
+                        command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                    }).Width(150).Title("Acciones");
+                    columns.Bound(p => p.Id).Width(50).Title("No");
+                    columns.Bound(p => p.Name).Width(400).Title("Ciudad");
+        //columns.Bound(p => p.).Format("{0:dd/MM/yyyy}").Width(150);
+        //columns.Bound(p => p.StateId ).Width(170);
+
+
+
+    })
+
+
+                .ToolBar(tools =>
+                {
+
+        //tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCity()" });
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("CityReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("CityReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.Id);
+                    model.Field(p => p.Id).Editable(false);
+
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get", "City"))
+                .Create(create => create.Action("Insert", "City").Type(HttpVerbs.Post))
+                .Update(update => update.Action("Update", "City").Type(HttpVerbs.Post))
+                 .Destroy(destroy => destroy.Action("Delete", "City", new { cityId = "{0}" }).Type(HttpVerbs.Delete))
+
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
+)
+
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCity").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCity").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>
+
+<div id="numCity">
+    @await Html.PartialAsync("pvwAddCity", new ERPMVC.DTO.CityDTO { Id = 0 })
+</div>

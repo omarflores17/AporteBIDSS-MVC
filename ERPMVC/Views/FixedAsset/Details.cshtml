@@ -1,0 +1,57 @@
+﻿
+@using Microsoft.AspNetCore.Http;
+@model ERPMVC.Models.FixedAsset
+@{
+    ViewData["Title"] = "Detalle de Activos Fijos";
+}
+
+
+
+
+
+<div class="container-fluid">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h3 id="titulo" class="text-themecolor">Activos Fijos  @ViewData["FixedAssetName"]</h3>
+            @await Html.PartialAsync("pvwFixedAsset", new ERPMVC.Models.FixedAsset { FixedAssetId = 0, AssetDate = DateTime.Now, BranchId = Convert.ToInt32(Context.Session.GetString("BranchId")) })
+
+        </div>
+
+
+
+
+    </div>
+</div>
+
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>

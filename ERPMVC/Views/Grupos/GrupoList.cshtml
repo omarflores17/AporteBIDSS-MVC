@@ -1,0 +1,230 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Grupos";
+}
+
+@{
+   
+    var Linea = ViewData["Linea"] as IEnumerable<ERPMVC.Models.Linea>;
+}
+
+
+<script>
+
+
+    //-- Agregar --
+    function Agregar() {
+
+         var dataObject = {
+             GrupoId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwGrupo", "Grupos")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#espaciomodal").html('');
+                $("#espaciomodal").html(result);
+                //$("#btnGuardar").show();
+                $("#titulo").text("Agregar Grupo");
+
+                //Mostrar modal con la información
+                $('#Modal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+
+
+    }
+
+    //-- Editar --
+    function Editar(e) {
+        debugger;
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            GrupoId: dataItem.GrupoId,
+            editar : 0
+        };
+        $.ajax({
+            url: '@Url.Action("pvwGrupo", "Grupos")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#espaciomodal").html('');
+                $("#espaciomodal").html(result);
+                $("#titulo").text("Editar Grupo");
+                //Mostrar modal con la información
+                $('#Modal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+
+
+
+    function RefrescarGrid() {
+        var grid = $("#grid").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+    //funcion para eliminar
+    function Delete(e) {
+        if (confirm('¿Seguro que quiere eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "Grupos")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                //data: { Id: dataItem.UnitOfMeasureId },
+                success: function (data) {
+                    var grid = $("#grid").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Linea");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+</script>
+
+
+
+<h3 class="text-themecolor">Grupos</h3>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.Grupo>()
+                                      .Name("grid")
+                                      .Columns(columns =>
+                                      {
+                                          columns.Command(command =>
+                                          {
+                                              command.Custom("Editar").IconClass("fa fa-edit").Click("Editar").Text(" ");
+                                              command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                          }).Width(100).Title("Acciones");
+                                          columns.Bound(p => p.GrupoId).Width(100).Title("No");
+                                          columns.Bound(p => p.Description).Width(200).Title("Nombre del Grupo");
+                                         // columns.Bound(p => p.LineaId).Title("Línea").Width(150);
+                                          columns.ForeignKey(p => p.LineaId,
+               (System.Collections.IEnumerable)ViewData["Linea"], "LineaId", "Descripcion").Title("Línea").Width(150);
+                                          columns.Bound(p => p.Estado).Width(200).Title("Estado");
+
+                                      })
+                                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+
+
+                                                     )
+                                                     .ForNumber(n => n
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsNull("Es nulo")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                      .ToolBar(tools =>
+                                      {
+                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "Agregar();" });
+                                          tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                                          tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+
+                                      })
+                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                       .Sortable()
+                                       .Pageable()
+                                       .Filterable()
+                                       .Scrollable()
+                                       .Pdf(pdf => pdf.FileName("GrupoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                         .Excel(excel => excel.FileName("GrupoReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                       .DataSource(dataSource =>
+                                          dataSource
+                                            .WebApi()
+                                            .ServerOperation(true)
+                                            .Model(model =>
+                                            {
+                                                model.Id(p => p.GrupoId);
+                                                model.Field(p => p.GrupoId).Editable(false);
+
+
+                                            })
+                                            .Events(events => events.Error("error_handler"))
+                                            .Read(read => read.Action("GetGrupo", "Grupos"))
+                                            .Create(create => create.Action("Insert", "Grupos"))
+                                            .Update(update => update.Action("Update", "Grupos", new { id = "{0}" }))
+                                      //.Destroy(destroy => destroy.Action("Delete", "Grupos", new { id = "{0}" }))
+                                      )
+)
+<div id="espaciomodal">
+    @await Html.PartialAsync("pvwGrupo", new ERPMVC.Models.Grupo())
+</div>
+<script>
+
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#grid").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grid").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Registro");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>

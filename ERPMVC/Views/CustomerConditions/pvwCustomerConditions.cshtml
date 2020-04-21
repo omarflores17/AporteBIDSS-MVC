@@ -1,0 +1,458 @@
+﻿@model ERPMVC.Models.CustomerConditions
+
+
+<script>
+
+
+
+    function RefreshCustomerConditionsDetail() {
+        var grid = $("#gridCustomerCondition").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+
+    function SaveCustomerCondition(e) {
+        //debugger;
+        if ($("#ConditionId_CC").val() > 0) {
+            $("#btnGuardarCustomerCondition").prop("disabled", true);
+         //   console.log(JSON.stringify(ParametersFormCustomerConditions()));
+            //RefreshCotizacionesDetail();
+            var notification = $("#notification").data("kendoNotification");
+            
+            var validator = $("#frmCustomerConditions").data("kendoValidator");
+            var status = $(".status");
+            if (validator.validate()) {
+                $.ajax({
+                    url: '@Url.Action("SaveCustomerConditions", "CustomerConditions")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(ParametersFormCustomerConditions()),
+                    success: function (result) {
+
+
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                        //notification.show({
+                        //    title: "Satisfactorio",
+                        //    message: "Condicion agregada correctamente!"
+                        //}, "success");
+
+
+                        RefreshCustomerConditionsDetail();
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnGuardarCustomerCondition").prop("disabled", false);
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+            }
+            else {
+                $("#btnGuardarCustomerCondition").prop("disabled", false);
+                notification.show({
+                    title: "Validación",
+                    message: "Datos inválidos en el formulario"
+                }, "error");
+            }
+        }
+        else {
+
+            $.toast({
+                heading: 'Advertencia',
+                text: 'Elija la condicion!!',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'warning',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    }
+
+    function customFunctionCC(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+    }
+
+    function ParametersFormCustomerConditions() {
+        return {
+            'CustomerConditionId': $("#CustomerConditionId").val(),
+            'ConditionId': $("#ConditionId_CC").val(),
+            'CustomerId': $("#CustomerId").val(),
+            'SubProductId': $("#SubProductId").val(),
+            'ProductId': $("#ProductId").val(),
+            'Description': $("#Description").val(),
+            'IdTipoDocumento': $("#IdTipoDocumento").val(),
+            'CustomerConditionName': $("#CustomerConditionName").val(),
+            'LogicalCondition': $("#LogicalCondition").data("kendoDropDownList").text(),
+            'ValueToEvaluate': $("#ValueToEvaluate").val(),
+            'ValueDecimal': $("#ValueDecimal").val(),
+            'ValueString': $("#ValueString").val(),
+            'DocumentId': $("#SalesOrderId").val()
+
+
+        }
+    }
+
+    completecustomercondition = function (xhr) {
+
+        $('#frmCustomerConditions').find(':input').not('#CustomerConditionId :submit').val('0');
+        $('#ConditionId_CC').val('0');
+        $('#SubProductId').data("kendoDropDownList").value('0');
+        $('#ProductId').data("kendoDropDownList").value(0);
+        $('#IdTipoDocumento').data("kendoDropDownList").value(0);
+        $('CustomerConditionName').val('');      
+        $("#btnGuardarCustomerCondition").prop("disabled", false);
+        //closecustomerconditionMant();
+    };
+
+
+
+</script>
+
+<div id="myModalCustomerConditionsMant" class="modal fade"  role="dialog" style="z-index:999999999999">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="closecustomerconditionMant();">&times;</button>
+                <h4 class="modal-title">Detalle de condición de cliente</h4>
+            </div>
+            <div class="modal-body">
+
+       
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                      
+                            <div class="card-body">
+                                <form id="frmCustomerConditions"
+                                      data-ajax-method="post"
+                                      data-ajax-loading="#loading"
+                                      data-ajax-begin="SaveCustomerCondition"
+                                      data-ajax="true"
+                                      data-ajax-complete="completecustomercondition"
+                                      kendo-validator="true"
+                                      method="post" class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        @*<h3 class="card-title">Información CustomerConditions</h3>*@
+                                        <hr>
+                                        <script >
+                                         function valueMapper(options) {
+                                          $.ajax({
+                                              url: "@Url.Action("Orders_ValueMapper", "CustomerConditions")",
+                                              data: convertValues(options.value),
+                                              success: function (data) {
+                                                  options.success(data);
+                                              }
+                                          });
+                                      }
+
+                                      function convertValues(value) {
+                                          var data = {};
+                                          value = $.isArray(value) ? value : [value];
+
+                                          for (var idx = 0; idx < value.length; idx++) {
+                                              data["values[" + idx + "]"] = value[idx];
+                                          }
+
+                                          return data;
+                                  }
+
+                                  function changesetearvalues() {
+                                      var dataObject = { 'Id': $("#cbxBuscar").val() };
+
+                                            $.ajax({
+                                                  url: '@Url.Action("GetCustomerConditionsById", "CustomerConditions")',
+                                                  method: 'GET',
+                                                  //datatype: "json",
+                                                  contentType: 'application/json',
+                                                  async: false,
+                                                  data: dataObject,
+                                                  success: function (data) {
+                                                    //console.log(data);
+                                                    $("#CustomerConditionId").val(data.CustomerConditionId);
+                                                    $("#CustomerConditionName").val(data.CustomerConditionName);
+                                                    $("#LogicalCondition").val(data.LogicalCondition);
+                                                    $("#ValueToEvaluate").val(data.ValueToEvaluate);
+                                                    $("#ValueString").val(data.ValueString);
+                                                    var numeric = $("#ValueDecimal").data("kendoNumericTextBox");
+                                                    numeric.value(data.ValueDecimal);
+                                                    numeric.trigger('change');
+
+                                                  },
+                                                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                    //  $("#btngenerarfactura").show();
+                                                      notification.show({
+                                                          title: "Validación",
+                                                          message: textStatus + ": " + XMLHttpRequest.responseText
+                                                      }, "error");
+
+                                                  }
+                                              });
+                                  }
+
+                    </script>
+                     <div class="row">
+                         <div class="col-md-12">
+                             <div class="form-group">
+                                 <label for="cbxBuscar" class="control-label" style="width:100%">Buscar condicion</label>
+
+                                 @(Html.Kendo().DropDownList()
+                                    .Name("cbxBuscar")
+                                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                    .DataTextField("CustomerConditionName")
+                                    .DataValueField("CustomerConditionId")
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                    .Template("#= CustomerConditionId # | Nombre: #= CustomerConditionName # | #= LogicalCondition # | #=ValueToEvaluate#")
+                                    .Height(290)
+                                    .Events(e => e.Change("changesetearvalues"))
+                                    .DataSource(source =>
+                                    {
+                                        source.Ajax()
+                                        .PageSize(80)
+                                        .Read("Virtualization_Read", "CustomerConditions");
+                                    })
+                                    .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                 )
+
+
+                             </div>
+                         </div>
+                     </div>
+
+
+                     <div class="row">
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="CustomerConditionId" class="control-label" style="width:100%"></label>
+                                 <kendo-numerictextbox name="ClientConditionId"
+                                                       format="n"
+                                                       min="0"
+                                                       disabled
+                                                       style="width:100%"
+                                                       step="1"
+                                                       value="Model.CustomerConditionId"></kendo-numerictextbox>
+
+                                 <span asp-validation-for="CustomerConditionId" class="text-danger"></span>
+                             </div>
+                         </div>
+
+
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="ConditionId" class="control-label" style="width:100%"></label>
+                                 <kendo-dropdownlist id="ConditionId_CC"
+                                    name="ConditionId"
+                                                 for="ConditionId"
+                                                 filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                 option-label="Seleccione la condión"
+                                                 datatextfield="ConditionName"
+                                                 required
+                                                 datavaluefield="ConditionId"
+                                                 style="width: 100%;">
+                                     <datasource type="DataSourceTagHelperType.WebApi">
+                                         <transport>
+                                             <read url="@Url.Action("GetJson", "Conditions")" />
+                                         </transport>
+                                     </datasource>
+                                 </kendo-dropdownlist>
+                                 <span asp-validation-for="ConditionId" class="text-danger"></span>
+                             </div>
+                         </div>
+
+
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="CustomerId" class="control-label" style="width:100%"></label>
+
+                                 <kendo-dropdownlist id="CustomerId_CC"
+                                                     filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                     placeholder="Select CustomerId"
+                                                     datatextfield="CustomerName"
+                                                     datavaluefield="CustomerId"
+                                                     enable="false"
+                                                     required
+                                                     style="width: 100%;">
+                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="13000">
+                                         <transport>
+                                             <read url="@Url.Action("GetCustomer", "Common")" />
+                                         </transport>
+                                     </datasource>
+                                 </kendo-dropdownlist>
+                                 <span asp-validation-for="CustomerId" class="text-danger"></span>
+                             </div>
+                         </div>
+                     </div>
+
+
+                     <div class="row">
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="ProductId" class="control-label" style="width:100%"></label>
+
+                                 <kendo-dropdownlist id="ProductId_CC"
+                                                     filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                     placeholder="Select ProductId"
+                                                     datatextfield="ProductName"
+                                                     datavaluefield="ProductId"
+                                                     enable="false"
+                                                     required
+                                                     auto-bind="false"
+                                                     style="width: 100%;">
+                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="5000">
+                                         <transport>
+                                             <read url="@Url.Action("GetProduct", "Common")" />
+                                         </transport>
+                                     </datasource>
+                                 </kendo-dropdownlist>
+                                 <span asp-validation-for="ProductId" class="text-danger"></span>
+                             </div>
+                         </div>
+
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="IdTipoDocumento" class="control-label" style="width:100%"></label>
+
+                                 <kendo-dropdownlist name="IdTipoDocumento"
+                                                     for="IdTipoDocumento"
+                                                     enable="false"
+                                                     filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                     placeholder="Select IdTipoDocumento"
+                                                     required
+                                                     datatextfield="Descripcion"
+                                                     datavaluefield="IdTipoDocumento"
+                                                     style="width: 100%;">
+                                     <datasource type="DataSourceTagHelperType.WebApi">
+                                         <transport>
+                                             <read url="@Url.Action("GetTiposDocumento", "TiposDocumento")" />
+                                         </transport>
+                                     </datasource>
+                                 </kendo-dropdownlist>
+                                 <span asp-validation-for="IdTipoDocumento" class="text-danger"></span>
+                             </div>
+                         </div>
+
+                         <div class="col-md-4">
+                             <div class="form-group">
+                                 <label asp-for="CustomerConditionName" class="control-label" style="width:100%"></label>
+                                 <input type="text" asp-for="CustomerConditionName" required class="form-control " style="width:100%" />
+                                 @*<textarea asp-for="CustomerConditionName" required class="form-control " style="width:100%"></textarea>*@
+                                 <span asp-validation-for="CustomerConditionName" class="text-danger"></span>
+                             </div>
+                         </div>
+                     </div>
+
+                   
+                 </div>
+
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="Description" class="control-label" style="width:100%"></label>
+                                                @*<input type="text" asp-for="Description" required class="form-control " style="width:100%" />*@
+                                                <textarea asp-for="Description" class="form-control" required style="width:100%"></textarea>
+                                                <span asp-validation-for="Description" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        @*<div class="col-md-4">
+                                               <div class="form-group">
+                                                   <label asp-for="LogicalCondition" class="control-label" style="width:100%"></label>
+                                                   <input type="text" asp-for="LogicalCondition" required class="form-control " style="width:100%" />
+                                                   <span asp-validation-for="LogicalCondition" class="text-danger"></span>
+                                               </div>
+                                           </div>*@
+                                        <div class="col-md-4">
+                                            <script>
+                                                function GrupoConfiguracionCondicionLogica() {
+                                                    return { Id: 10 };
+                                                }
+                                            </script>
+                                            <div class="form-group">
+                                                <label asp-for="LogicalCondition" class="  control-label" style="width:100%"></label>
+
+                                                <kendo-dropdownlist name="LogicalCondition"
+                                                                    for="LogicalCondition"
+                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione la condición logica"
+                                                                    datatextfield="Nombre"
+                                                                    datavaluefield="Id"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="2000000">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionCondicionLogica" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                                <span asp-validation-for="LogicalCondition" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="ValueToEvaluate" class="control-label" style="width:100%"></label>
+                                                <input type="text" asp-for="ValueToEvaluate" required class="form-control " style="width:100%" />
+                                                <span asp-validation-for="ValueToEvaluate" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+
+                 <div class="row">
+                     <div class="col-md-6">
+                         <div class="form-group">
+                             <label asp-for="ValueString" class="control-label" style="width:100%"></label>
+                             <input type="text" asp-for="ValueString" class="form-control" style="width:100%" />
+                             <span asp-validation-for="ValueString" class="text-danger"></span>
+                         </div>
+                     </div>
+                     <div class="col-md-6">
+                         <div class="form-group">
+                             <label asp-for="ValueDecimal" class="control-label" style="width:100%"></label>
+                             <kendo-numerictextbox name="ValueDecimal"
+                                                   format="n4"
+                                                    decimals="4"
+                                                    min="0"
+                                                    round="false"
+                                                   spinners="false"
+                                                   style="width:100%"
+                                                   value="Model.ValueDecimal"></kendo-numerictextbox>
+                             <span asp-validation-for="ValueDecimal" class="text-danger"></span>
+                         </div>
+                     </div>
+                 </div>
+             
+
+                 <div class="row">
+                     <button id="btnGuardarCustomerCondition" type="submit" onclick="SaveCustomerCondition();" class="form-control">Guardar</button>
+                 </div>
+
+             </form>
+                 </div>
+                 
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+</div>
+

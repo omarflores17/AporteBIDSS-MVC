@@ -1,0 +1,435 @@
+﻿@using System.Security.Claims
+
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model ERPMVC.Models.Customer
+@{
+    ViewData["Title"] = "Detalle de Cliente";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+{"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function GetCustomerId() {
+        return { CustomerId: $("#CustomerId").val() }
+    }
+</script>
+
+<div class="mt-3 m-l-5">
+    <form id="frmCustomer" kendo-validator="true" kendo-messages="messages"
+          data-ajax="true"
+          data-ajax-method="post"
+          data-ajax-begin="SaveTax"
+          class="validation-wizard wizard-circle">
+        <div class="row ">
+            <div class="form-group" hidden>
+                <label asp-for="CustomerId" class="control-label" style="width: 100%;"></label>
+                <input type="text" id="CustomerId" class="form-control" style="min-width:100%;" asp-for="CustomerId" readonly />
+            </div>
+            <div class=" col-md-4" hidden>
+                <div class="form-group">
+                    <label asp-for="Identidad" class="control-label" style="width: 100%;"></label>
+                    <input type="text" id="Identidad" class="form-control" style="min-width:100%;" asp-for="Identidad" />
+                </div>
+            </div>
+            <div class=" col-md-6">
+                <div class="form-group">
+                    <label class="control-label" style="width: 100%;">Identidad/RTN</label>
+                    <input type="text" id="RTN" data-validate="false" required data-required-msg="El RTN/Identidad es Requerido." class="form-control" maxlength="14" style="min-width:100%;" asp-for="RTN" onKeyPress="return soloNumeros(event)" asp-for="RTN" />
+                    <span asp-validation-for="RTN" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="Email" class="control-label" style="width: 100%;"></label>
+                    <input type="email" id="Email" placeholder="nombre@ejemplo.com" maxlength="150" data-email-msg="Formato del Correo no válido" class="form-control" style="min-width:100%;" asp-for="Email" />
+                </div>
+            </div>
+            <div class="col-md-4" hidden>
+                <div class="form-group">
+                    <label asp-for="IdEstado" class="control-label"></label>
+                    <kendo-dropdownlist name="IdEstadoCliente" style="width:100%;"
+                                        for="IdEstado"
+                                        id="IdEstadoCliente" data-validate="false"
+                                        @*option-label="Seleccionar el Estado" *@
+                                        data-required-msg="El Estado es Requerido."
+                                        datatextfield="NombreEstado"
+                                        datavaluefield="IdEstado">
+                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                            <transport>
+                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                            </transport>
+                        </datasource>
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-4" hidden>
+                <div class="form-group">
+                    <label asp-for="CustomerType" class="control-label">Tipo de Cliente</label>
+                    <kendo-dropdownlist name="CityId"
+                                        for="@Model.CustomerTypeId"
+                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        @*option-label="Seleccionar Tipo de Cliente" *@
+                                        datatextfield="CustomerTypeName" data-validate="false"
+                                        datavaluefield="CustomerTypeId"
+                                        style="width: 100%;" onchange="PrevenirCambios()">
+                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                            <transport>
+                                <read url="@Url.Action("Get", "CustomerType")" />
+                            </transport>
+                        </datasource>
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="CustomerTypeId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label" style="width: 100%;">Nombre del Cliente</label>
+                    <input type="text" id="CustomerName" required data-required-msg="El Nombre Cliente es Requerido." class="form-control" style="min-width:100%;" asp-for="CustomerName" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label" style="width: 100%;">Apellido del Cliente</label>
+                    <input type="text" id="CustomerLastName" required data-required-msg="El Apellido Cliente es Requerido." class="form-control" style="min-width:100%;" asp-for="CustomerLastName" />
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+
+            <script>
+                function refreshdepartamento() {
+                    $("#StateId").data("kendoDropDownList").dataSource.read();
+                }
+            </script>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="CountryId" class="control-label">País</label>
+                    <kendo-dropdownlist name="CountryId"
+                                        for="@Model.CountryId"
+                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        option-label="Seleccionar País"
+                                        datatextfield="Name"
+                                        onchange="refreshdepartamento();"
+                                        datavaluefield="Id" data-validate="false"
+                                        required data-required-msg="El país es requerido."
+                                        auto-bind="true"
+                                        style="width: 100%;">
+                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                            <transport>
+                                <read url="@Url.Action("Get", "Country")" />
+                            </transport>
+                        </datasource>
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="CountryId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <script>
+                function GetCountryId() {
+
+                    return { 'CountryId': $("#CountryId").val() }
+                }
+
+                function refreshmunicipio() {
+                    $("#CityId").data("kendoDropDownList").dataSource.read();
+                }
+            </script>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="StateId" class=" control-label" style="width:100%"></label>
+                    <kendo-dropdownlist name="StateId"
+                                        for="@Model.StateId"
+                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        option-label="Seleccionar Departamento"
+                                        auto-bind="true"
+                                        onchange="refreshmunicipio();"
+                                        required data-required-msg="El departamento es requerido."
+                                        datatextfield="Name"
+                                        datavaluefield="Id" data-validate="false"
+                                        style="width: 100%;">
+                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                            <transport>
+                                <read url="@Url.Action("GetJson", "State")" data="GetCountryId" />
+                            </transport>
+                        </datasource>
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="StateId" class="text-danger"></span>
+                </div>
+            </div>
+            <script>
+                function GetStateId() {
+
+                    return { 'StateId': $("#StateId").val() }
+                }
+            </script>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="CityId" class=" control-label" style="width:100%"></label>
+                    <kendo-dropdownlist name="CityId"
+                                        for="@Model.CityId"
+                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        option-label="Seleccionar Ciudad"
+                                        auto-bind="true" data-validate="false"
+                                        required data-required-msg="La ciudad es requerido."
+                                        datatextfield="Name"
+                                        datavaluefield="Id"
+                                        style="width: 100%;">
+                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                            <transport>
+                                <read url="@Url.Action("GetCityJson", "City")" data="GetStateId" />
+                            </transport>
+                        </datasource>
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="CityId" class="text-danger"></span>
+                </div>
+            </div>
+
+            @*<div class="col-md-4">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label asp-for="StateId" class="control-label">Departamento</label>
+                            <kendo-dropdownlist name="StateId"
+                                                for="@Model.StateId"
+                                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                option-label="Seleccionar Departamento"
+                                                datatextfield="Name"
+                                                datavaluefield="Id"
+                                                required
+                                                style="width: 100%;" onchange="PrevenirCambios()">
+                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                    <transport>
+                                        <read url="@Url.Action("Get", "State")" />
+                                    </transport>
+                                </datasource>
+                            </kendo-dropdownlist>
+                            <span asp-validation-for="StateId" class="text-danger"></span>
+
+                        </div>
+                    </div>
+                </div>*@
+            @*<div class=" col-md-4">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label asp-for="CityId" class="control-label">Ciudad</label>
+                            <kendo-dropdownlist name="CityId"
+                                                for="@Model.CityId"
+                                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                option-label="Seleccionar Ciudad"
+                                                datatextfield="Name"
+                                                datavaluefield="Id"
+                                                required
+                                                style="width: 100%;" onchange="PrevenirCambios()">
+                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                    <transport>
+                                        <read url="@Url.Action("Get", "City")" />
+                                    </transport>
+                                </datasource>
+                            </kendo-dropdownlist>
+                            <span asp-validation-for="CityId" class="text-danger"></span>
+
+                        </div>
+                    </div>
+                </div>*@
+
+        </div>
+        <div class="row">
+            <div class=" col-md-8">
+                <div class="form-group">
+                    <label class="control-label" style="width: 100%;">Dirección Casa</label>
+                    <textarea type="text" id="Address" required data-required-msg="La Dirección es Requerida." maxlength="200" class="form-control" style="min-width:100%;" asp-for="Address"></textarea>
+                </div>
+            </div>
+            <div class=" col-md-4">
+                <div class="form-group">
+                    <label asp-for="Phone" class=" control-label" style="width:100%"></label>
+                    <input type="text" asp-for="Phone" required data-required-msg="El Teléfono es Requerido." name="Phone" class="form-control" style="width:100%" onchange="Completarphone(event)" onKeyPress="return soloNumeros(event)" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="row">
+            <div class=" col-md-8">
+                <div class="form-group">
+                    <label class="control-label" style="width: 100%;">Dirección Trabajo</label>
+                    <textarea id="DireccionEnvio" data-validate="false" required class="form-control" data-required-msg="La Dirección es Requerida." maxlength="200" style="min-width:100%;" asp-for="DireccionEnvio"></textarea>
+                </div>
+            </div>
+            <div class=" col-md-4">
+                <div class="form-group">
+                    <label class=" control-label" style="width:100%">Teléfono Trabajo</label>
+                    <input type="text" data-validate="false" asp-for="WorkPhone" name="WorkPhone" required data-required-msg="El Teléfono es Requerido." class="form-control" style="width:100%" onchange="CompleatarPhoneREferencetwo(event)" onKeyPress="return soloNumeros(event)" />
+                    <span asp-validation-for="WorkPhone" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label asp-for="ContactPerson" class="control-label" style="width: 100%;"></label>
+                    <input type="text" data-validate="false" id="ContactPerson" required data-required-msg="El Contacto es Requerido." maxlength="50" class="form-control" style="min-width:100%;" asp-for="ContactPerson" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="MontoIngresosAnuales" class="control-label" style="width:100%">Ingresos Mensuales</label>
+                    <kendo-numerictextbox name="MontoIngresosAnuales"
+                                          format="n2"
+                                          min="0"
+                                          step="1"
+                                          required data-required-msg="La cantidad mensual es requerida."
+                                          style="width:100%"
+                                          data-validate="false"
+                                          value="Model.MontoIngresosAnuales" />
+                    <span asp-validation-for="MontoIngresosAnuales" class="text-danger"></span>
+                </div>
+            </div>
+            @*<div class=" col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 100%;">Ingresos Mensuales</label>
+                        <input type="number" id="MontoIngresosAnuales" required class="form-control" style="min-width:100%;" asp-for="MontoIngresosAnuales" />
+                    </div>
+                </div>*@
+
+
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <button id="btnGuardarCliente" type="button" onclick="SaveCustomer(); " class="btn btn-success">Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Regresar</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+     function Completarphone(e) {
+            var phone = $("#Phone").val()
+            var telefono = phone.length
+            if (telefono < 8 || phone.indexOf("_") > -1 == true) {
+                swal('Por favor completar el campo teléfono')
+                return;
+            }
+    }
+
+     function CompleatarPhoneREferencetwo(e) {
+                var cadena = $("#WorkPhone").val()
+                var cadenaLenght = cadena.lenght
+                if (cadenaLenght < 14 || cadena.indexOf("_") > -1 == true) {
+                    swal('Por favor completar el campo telefono Trabajo')
+                    return;
+                    //document.getElementById("btnVendor").disabled = true;
+                }
+    }
+
+
+    var changes = false;
+
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+    $(document).ready(function () {
+        $("#Phone").kendoMaskedTextBox({
+            mask: "0000-0000"
+        });
+        $("#WorkPhone").kendoMaskedTextBox({
+            mask: "0000-0000"
+        });
+
+        @*$.ajax({
+                url: '@Url.Action("GetCityAndState", "Customer")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                success: function (data) {
+                    debugger;
+                    if (data != undefined) {
+                        //$("#CountryId").trigger('change');
+                        //$("#StateId").trigger('change');
+                        $("#CountryId").data("kendoDropDownList").value(data.CountryId);
+                        $("#CountryId").trigger('change');
+                        $("#StateId").trigger('change');
+                        $("#StateId").data("kendoDropDownList").value(data.StateId);
+                        $("#CountryId").trigger('change');
+                        $("#StateId").trigger('change');
+                        $("#CityId").data("kendoDropDownList").value(data.CityId);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });*@
+    });
+
+   $("#RTN").on("change", function () {
+        debugger;
+        var notification = $("#notification").data("kendoNotification");
+        var dataObject = {
+            RTN: $("#RTN").val(),
+        };
+       if ($("#RTN").val() != "") {
+            $.ajax({
+                url: '@Url.Action("CustomerByRTN", "Customer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    if (data != undefined) {
+                        $("#CustomerId").val(data.CustomerId);
+                        $("#CustomerName").val(data.CustomerName);
+                        $("#CustomerLastName").val(data.CustomerLastName);
+                        $("#Email").val(data.Email);
+                        $("#Identidad").val(data.Identidad);
+                        $("#ContactPerson").val(data.ContactPerson);
+                        $("#Address").val(data.Address);
+                        $("#CountryId").data("kendoDropDownList").value(data.CountryId);
+                        $("#CountryId").trigger('change');
+                        $("#StateId").data("kendoDropDownList").value(data.StateId);
+                        $("#StateId").trigger('change');
+                        $("#Phone").val(data.Phone);
+                        $("#DireccionEnvio").val(data.DireccionEnvio);
+                        $("#WorkPhone").val(data.WorkPhone);
+                        $("#MontoIngresosAnuales").data("kendoNumericTextBox").value(data.MontoIngresosAnuales);
+                        $("#CityId").data("kendoDropDownList").value(data.CityId);
+                        var permisos = '@ViewData["permisos"]';
+                        if ("@permisos.HasClaim("Clientes.Listado de Clientes.Editar Cliente", "true")" == "True") {
+                            $("#btnGuardarCliente").show();
+                        }
+                        else {
+                            $("#btnGuardarCliente").hide();
+                        }
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    })
+</script>

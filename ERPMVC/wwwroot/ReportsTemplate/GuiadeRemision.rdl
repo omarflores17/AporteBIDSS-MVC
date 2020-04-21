@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+          <Border />
+        </Style>
+        <Height>4.5in</Height>
+      </Body>
+      <Width>6in</Width>
+      <Page>
+        <LeftMargin>0in</LeftMargin>
+        <RightMargin>0in</RightMargin>
+        <TopMargin>0in</TopMargin>
+        <BottomMargin>0in</BottomMargin>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+          <Border />
+        </Style>
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="ERP">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString> Data Source=02PE-JONATHAN-H\SQLEXPRESS;Initial Catalog=ERPVIALE;Integrated Security=True;</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
+      </ConnectionProperties>
+      <rd:SecurityType>Integrated</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+</Report>

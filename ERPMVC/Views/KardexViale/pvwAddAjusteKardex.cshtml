@@ -1,0 +1,234 @@
+﻿@model ERPMVC.DTO.KardexVialeDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+
+}
+<link href="~/css/pages/file-upload.css" rel="stylesheet">
+<div class="card card-outline-inverse">
+    <div class="card-header">
+        <h3 class="m-b-0 text-white">Ajuste Kardex</h3>
+        <a asp-action="Menu" class="close" aria-hidden="true" style="background-color:white">×</a>
+    </div>
+    <div class="card-body">
+        <form id="frmCompanyInfo" kendo-validator="true"
+              data-ajax="true"
+              data-ajax-method="post"
+              data-ajax-begin="SaveKardex"
+              class="validation-wizard wizard-circle">          
+            <div class="row">
+                <div class="col-md-4" hidden>
+                    <div class="form-group">
+                        <label asp-for="Id" class=" control-label" style="width:100%">Id</label>
+                        <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                        <span asp-validation-for="Id" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="ProducId" class="control-label">Producto</label>
+                        <kendo-dropdownlist name="ProducId"
+                                            onclick="Cantidad()"
+                                            for="@Model.ProducId"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccionar el Producto"
+                                            datatextfield="ProductName "
+                                            datavaluefield="ProductId"
+                                            style="width: 100%;" required data-required-msg="El producto es requerido."
+                                            onchange="Cantidad();">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                <transport>
+                                    <read url="@Url.Action("GetProductConcatenado", "Product")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                        <span asp-validation-for="ProducId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="DocumentId" class="control-label">Motivo</label>
+                        <kendo-dropdownlist name="DocumentId"
+                                            for="@Model.DocumentId"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccionar Motivo"
+                                            datatextfield="Descripcion"
+                                            datavaluefield="Id"
+                                            required data-required-msg="El Motivo es requerido."
+                                            style=" width: 100%">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                <transport>
+                                    <read url="@Url.Action("Get", "MotivosAjuste")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                        <span asp-validation-for="DocumentId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label asp-for="Total" class=" control-label" style="width:100%">Cantidad actual</label>
+                        <input type="text" asp-for="Total" id="Total" name="Total" onkeyup="this.value=Numeros(this.value)" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" readonly />
+                        <span asp-validation-for="Total" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label asp-for="QuantityEntry" class=" control-label" style="width:100%">Cantidad ingresar</label>
+                        <input type="number" asp-for="QuantityEntry" id="QuantityEntry" name="QuantityEntry" onKeyPress="return soloNumeros(event)" onchange="Validar(event)" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" required data-required-msg="La cantidad a ingresar es requerida." />
+                        <span asp-validation-for="QuantityEntry" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>           
+            <div class="row" style="text-align: right">
+                <div class="col-md-12">
+                    <a asp-action="Menu" class="btn btn-secondary">Cerrar</a>
+                    <button id="btnCompanyInfo" class="btn btn-success" type="button" onclick="SaveKardex(this)"> Guardar </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+    function Validar(event) {
+         
+        
+    }
+
+    function SaveKardex(e) {
+        if ($("#QuantityEntry").val() <= 0) {
+            swal("Error", "La Cantidad no puede ser 0 o negativa.");
+            e.preventDefault();
+            return (false);
+        }
+            var notification = $("#notification").data("kendoNotification");
+            $("#btnCompanyInfo").hide();
+            $("#btnCompanyInfo").prop("disabled", true);
+
+            var dataObject = {
+            'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+            'ProducId': $("#ProducId").val(),
+            'DocumentId': $("#DocumentId").val(),
+            'ProductName': $("#ProducId").data("kendoDropDownList").text(),
+            'QuantityEntry': $("#QuantityEntry").val(),
+            'Total': $("#Total").val(),
+            'TypeOperationName': "Ajuste de Kardex",
+            'TypeOperationId': "3",  
+            };
+
+           debugger;
+            var validator = $("#frmCompanyInfo").data("kendoValidator");
+                 var status = $(".status");
+
+            console.log('VERIFICAR',dataObject)
+                if (validator.validate()) {
+                    $.ajax({
+                        url: '@Url.Action("Save", "KardexViale")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                    swal({
+                        title: "Ajuste de kardex",
+                        text: "Se han guardado los cambios",
+                        type: "success"
+                    },
+                    function () {
+                        window.location.href = "@Url.Action("Index2", "KardexViale")";
+                     });
+
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                        }
+                    }, false);  
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal("Error", "Ya existe un tipo de gasto con este nombre", "error");
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Datos invalidos en el formulario!")
+                        .removeClass("valid")
+                        .addClass("invalid");
+        }
+
+        $("#btnCompanyInfo").show();
+            $("#btnCompanyInfo").prop("disabled", false);
+    }
+
+    function Cantidad() {
+        if ($("#ProducId").val() > 0) {
+            $("#Total").val(0);
+        }
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("VerSaldo", "KardexViale")",
+            data: $("#ProducId").val(),
+            contentType: "application/json; charset=utf-8",
+         dataType: "json",
+            success: function (data) {
+                console.log(data);
+                    $("#Total").val(data);
+                },
+            error: function (req, status, error) {
+                alert(error);
+            }
+        });
+    }
+
+    function soloNumeros(e) {
+            var key = window.Event ? e.which : e.keyCode
+            return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+     function Completarphone(e) {
+            var phone = $("#Phone").val()
+            var telefono = phone.length
+            if (telefono < 14 || phone.indexOf("_") > -1 == true) {
+                alert('Por favor completar el campo teléfono')
+            }
+    }
+
+    function soloLetras(e) {
+                key = e.keyCode || e.which;
+            tecla = String.fromCharCode(key).toLowerCase();
+            letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+            especiales = "8-37-39-46";
+
+            tecla_especial = false
+            for (var i in especiales) {
+                if (key == especiales[i]) {
+                tecla_especial = true;
+            break;
+        }
+}
+
+            if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+                return false;
+        }
+    }
+
+
+    document.addEventListener("input", function () {
+        $("input[type='text']", 'form').each(function () {
+            _id = $(this).attr("id");
+            _value = document.getElementById(_id).value;
+            document.getElementById(_id).value = _value.trimStart();
+        });
+    });
+
+    $(document).ready(function () {
+        $("#QuantityEntry").val("");       
+    });
+</script>

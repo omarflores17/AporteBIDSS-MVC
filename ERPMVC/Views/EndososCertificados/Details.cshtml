@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Detalle Orden De Pedido";
+}
+
+
+
+<script>
+    function GetEndososCertificadosId() {
+        return { EndososCertificadosId: $("#EndososCertificadosId").val() }
+    }
+</script>
+
+<div id="Endosos">
+    @await Html.PartialAsync("pvwEndosos", new ERPMVC.DTO.EndososDTO { EndososCertificadosId = 0, DocumentDate = DateTime.Now, ExpirationDate = DateTime.Now })
+</div>
+
+
+
+
+
+<style>
+    .modal-backdrop {
+        /* bug fix - no overlay */
+        display: none;
+    }
+
+    .modal-dialog {
+        margin: 2px auto;
+        z-index: 1100 !important;
+    }
+
+    .modal-open .modal {
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow: auto;
+        min-height: 1700;
+    }
+
+    .fixed-div {
+        width: 100%;
+        position: fixed;
+        z-index: 1051; /* anything above 1050*/
+        background: #fff;
+        box-shadow: 0 5px 20px 4px rgba(0,0,0,.1);
+    }
+</style>
+<div class="container-fluid">
+
+</div>

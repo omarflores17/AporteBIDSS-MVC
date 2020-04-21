@@ -1,0 +1,384 @@
+﻿<script>
+
+
+    function sleep(miliseconds) {
+        var currentTime = new Date().getTime();
+
+        while (currentTime + miliseconds >= new Date().getTime()) {
+        }
+    }
+
+
+
+    function RefreshOFAC() {
+        debugger;
+
+
+       // var dataObject = ["detenerflujoreadgrid"];
+     
+
+        $.ajax({
+            url: '@Url.Action("GetBlackListByParams", "BlackListCustomers")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: DataBlackList(),
+            success: function (GetBlackListByParams) {     
+                //debugger;
+                //$("#divBlackListFind").html('');
+                //$("#divBlackListFind").html(data);              
+
+
+               var gridListaNegra = $("#gridListaNegra").getKendoGrid();
+                var datasource = gridListaNegra.dataSource;
+
+               var raw = datasource._data;
+                for (i = datasource._data.length - 1; i >= 0; i--) {
+                   var item = raw[i];
+                    datasource.remove(item);
+                }
+
+              
+               // console.log(GetBlackListByParams);
+                for (var i = 0; i < GetBlackListByParams.Data.length; i++) {
+                    datasource.insert(GetBlackListByParams.Data[i]);
+                }
+                    //d.async = false;
+                    //d.read();
+
+                    //  gridListaNegra.refresh();
+                    var gridListalengthNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+                 //   console.log('Lista Negra:' + gridListalengthNegra.length);
+                    if (gridListalengthNegra.length > 0) {
+                        $("#myModalListaNegra").modal('show');
+                    }
+                    else {
+                        $("#myModalListaNegra").modal('hide');
+                    }
+             
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+
+
+        $.ajax({
+            url: '@Url.Action("GetPersonByName", "OFAC")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: DataOFAC(),
+            success: function (data) {
+               // debugger;
+               // $("#divOFACFind").html('');
+               // $("#divOFACFind").html(data);
+                var grid = $("#gridListaOFAC").getKendoGrid();
+                var datasource = grid.dataSource;
+                var raw = datasource._data;
+                for (i = datasource._data.length - 1; i >= 0; i--) {
+                    var item = raw[i];
+                    datasource.remove(item);
+                }
+
+                for (var i = 0; i < data.Data.length; i++) {
+                    datasource.insert(data.Data[i]);
+                }
+
+                // d2.async = false;
+                  //  d2.read();
+
+                    //grid.refresh();
+                    var gridListaOFAClen = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+                    //console.log('Listado OFAC: ' + gridListaOFAClen.length);
+                    if (gridListaOFAClen.length > 0) {
+                        $("#myModalOFAC").modal('show');
+                    }
+                    else {
+                        $("#myModalOFAC").modal('hide');
+                    }
+                
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+
+
+        $.ajax({
+            url: '@Url.Action("GetByParams", "PEPS")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: DataPEPS(),
+            success: function (data) {
+                //debugger;
+                //$("#divPEPSFind").html('');
+                //$("#divPEPSFind").html(data);
+              
+                var gridListaPEPS = $("#gridListaPEPS").getKendoGrid();
+                var datasource = gridListaPEPS.dataSource;
+
+                var raw = datasource._data;
+                for (i = datasource._data.length - 1; i >= 0; i--) {
+                    var item = raw[i];
+                    datasource.remove(item);
+                }
+
+                for (var i = 0; i < data.Data.length; i++) {
+                    datasource.insert(data.Data[i]);
+                }
+
+                //d3.async = false;
+                //d3.read();
+
+                //   d3.refresh();
+                var gridListalengthpeps = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+               // console.log('Listado PEPS' + gridListalengthpeps.length);
+
+                if (gridListalengthpeps.length > 0) {
+                    $("#myModalPEPS").modal('show');
+                }
+                else {
+                    $("#myModalPEPS").modal('hide');
+                    }
+                
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("GetONUPersonByName", "ONU")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: DataONUList(),
+            success: function (data) {
+                //debugger;
+                //$("#divONULISTFind").html('');
+                //$("#divONULISTFind").html(data);
+                var gridListaONU = $("#gridListaONU").getKendoGrid();
+                var datasource = gridListaONU.dataSource;
+
+                var raw = datasource._data;
+                for (i = datasource._data.length - 1; i >= 0; i--) {
+                    var item = raw[i];
+                    datasource.remove(item);
+                }
+
+                for (var i = 0; i < data.Data.length; i++) {
+                    datasource.insert(data.Data[i]);
+                }
+
+                // d4.async = false;
+                // d4.read();
+                // gridListaONU.refresh();
+
+                var gridListalengthONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+                //console.log(gridListalengthONU.length);
+                if (gridListalengthONU.length > 0) {
+                    $("#myModalListaONU").modal('show');
+                }
+                else {
+                    $("#myModalListaONU").modal('hide');
+                }
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+
+
+        // sleep(3000);
+        //RefreshOFAC();
+    }
+
+
+    function DataOFAC() {
+        debugger;
+        var mfirstname = $("#SalesOrderName").val();
+        var mlastName = $("#SalesOrderName").val();
+        if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() != '' || $("#PartnerName").val() != null)) {
+            mfirstname = $("#PartnerName").val();
+            mlastName = $("#PartnerName").val();
+        }
+        else if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null) && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)) {
+            mfirstname = $("#NombreAS").val();
+            mlastName = $("#NombreAS").val();
+        }
+        else if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)
+            && ($("#NombreAS").val() == '' || $("#NombreAS").val() == null)
+
+        ) {
+            mfirstname = $("#NombreApoderado").val(),
+           mlastName = $("#NombreApoderado").val();
+        }
+        //Cambio de Marvin Guillen para validar el Nombre del Proveedore
+        if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)
+            && ($("#NombreAS").val() == '' || $("#NombreAS").val() == null)
+            && ($("#NombreApoderado").val() == '' || $("#NombreApoderado").val() == null)
+            && ($("#PurchName").val() != '' || $("#PurchName").val() != null))
+         {
+            mfirstname = $("#PurchName").val(),
+                mlastName = $("#PurchName").val();
+        }
+        //Cambio de Marvin Guillen para validar el Nombre del Proveedore
+
+
+       return {
+            firstName: mfirstname,
+           lastName: mlastName
+        };
+
+    }
+
+    function ListaOfacClose() {
+        //debugger;
+        $("#myModalOFAC").modal('hide');
+        $("#gridListaOFAC").getKendoGrid().dataSource.read();
+       
+    }
+</script>
+
+<div id="myModalOFAC" class="modal fade" role="dialog" style="z-index:9999">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="ListaOfacClose();">&times;</button>
+                <h4 class="modal-title">Información Listados OFAC</h4>
+            </div>
+            <div class="modal-body">
+
+                @( Html.Kendo().Grid<OFAC.sdnListSdnEntryM>
+                   ()
+                   .Name("gridListaOFAC")
+                   .Columns(columns =>
+                   {
+                       columns.Bound(p => p.firstName).Width(100);
+                       columns.Bound(p => p.lastName).Width(150);
+                       columns.Bound(p => p.title).Width(100);
+                       columns.Bound(p => p.programList).Width(100);
+                       columns.Bound(p => p.remarks).Width(100);                      
+                       columns.Command(command =>
+                       {
+                           //command.Custom("Ver detalles").Click("Detalles");
+                           //command.Edit();
+                           // command.Destroy();
+                       }).Width(150);
+
+                   })
+                       .Filterable(f => f.Operators(o => o.ForString(s => s
+                                       .Clear()
+                                       .Contains("Contiene")
+                                       .DoesNotContain("No contiene")
+                                       .EndsWith("Termina con")
+                                       .IsEqualTo("Es igual a")
+                                       .IsNotEqualTo("No es igual a")
+                                       .IsNull("Es nulo")
+                                       .StartsWith("Inicia con")
+
+
+                                 )
+                                 .ForNumber(n => n
+                                   .Clear()
+                                   .IsEqualTo("Es igual a")
+                                   .IsGreaterThan("Es mayor que")
+                                   .IsLessThan("Es menor que")
+                                   .IsNull("Es nulo")
+                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 )
+                                 .ForDate(d => d
+                                 .Clear()
+                                 .IsEqualTo("Es igual que")
+                                 .IsGreaterThan("Es mayor que")
+                                 .IsLessThan("Es menor que")
+                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 .IsNotEqualTo("No es igual que")
+                                  )
+                               ))
+                   .ToolBar(tools =>
+                   {
+                       // tools.Create();
+                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                       tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                   })
+                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                   .Sortable()
+                   .Pageable()
+                   .Filterable()
+                   .Scrollable()
+                   .Pdf(pdf => pdf.FileName("OFACReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                       .Excel(excel => excel.FileName("OFACReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                   .DataSource(dataSource =>
+                       dataSource
+                       .WebApi()
+                      // .AutoSync(false)
+                       .ServerOperation(true)
+                       .Model(model =>
+                       {
+                           model.Id(p => p.Id);
+                           model.Field(p => p.Id).Editable(false);
+                           model.Field(p => p.firstName).Editable(true);
+                           model.Field(p => p.lastName).Editable(true);
+                           model.Field(p => p.title).Editable(false);
+                           model.Field(p => p.remarks).Editable(false);
+
+                       })
+                       .Events(events => events.Error("error_handler"))
+                       .Read(read => read.Action("GetPersonByName", "OFAC").Data("DataOFAC"))
+                       .Create(create => create.Action("Insert", "OFAC"))
+                       .Update(update => update.Action("Update", "OFAC", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "OFAC", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+
+                   )
+                   .Events(e =>
+                   {
+                       // e.Save("onsave");
+
+                   })
+                )
+
+            </div>
+        </div>
+    </div>
+</div>

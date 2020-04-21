@@ -1,0 +1,249 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Empleados";
+
+}
+
+<script>
+     function clearsession() {
+        var dataObject = ["listadoempleados"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddEmployees() {
+
+         var dataObject = {
+             IdEmpleado: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddEmployees", "Employees")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numEmployees").html('');
+                $("#numEmployees").html(result);
+                $("#Salario").val(' ');
+
+                //$("#btnCAI").hide();
+                $('#ModalEmployees').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+
+
+    }
+    // function AddEmployees() {
+
+    //     $('#ModalEmployees').find(':input').not(':submit').val('');
+    //     $('#ModalEmployees').modal('show');
+    //     $("#IdEmpleado").val('0');
+    //     $("#Genero").val('0');
+    //     $("#IdBranch").data("kendoDropdownList").val(0);
+    //     $("#TipoSangre").data("kendoDropdownList").value(0);
+    //     $("#IdPuesto").data("kendoDropdownList").val(0);
+    //     $("#IdCountry").data("kendoDropdownList").value(0);
+    //     $("#IdState").val();
+    //     $("#IdCity").data("kendoDropdownList").value(0);
+         
+    //}
+
+
+         function EditEmployees(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdEmpleado: dataItem.IdEmpleado,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddEmployees", "Employees")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    console.log('success', result)
+
+                    $("#numEmployees").html('');
+                    $("#numEmployees").html(result);
+                    
+                    $('#ModalEmployees').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridEmployees").getKendoGrid();
+        grid.dataSource.read();
+        $("#Genero").data("kendoDropdownList").val(0);
+        $("#IdBranch").data("kendoDropdownList").value(0);
+        $("#TipoSangre").data("kendoDropdownList").value(0);
+        $("#IdPuesto").data("kendoDropdownList").value(0);
+        $("#IdCountry").data("kendoDropdownList").value(0);
+        $("#IdState").data("kendoDropdownList").value(0);
+        $("#IdCity").data("kendoDropdownList").value(0);
+
+    }
+
+     //funcion para eliminar
+    function Delete(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "Employees")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                //data: { Id: dataItem.UnitOfMeasureId },
+                success: function (data) {
+                    var grid = $("#gridEmployees").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Empleado");
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     swal("Error", textStatus, "error");
+                  }
+            });
+        }
+    }
+
+</script>
+
+<h3 class="text-themecolor">Empleados</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Employees>
+                  ()
+
+                    .Name("gridEmployees")
+
+                    .Columns(columns =>
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployees");
+                            command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                        }).Width(170).Title("Acciones");
+
+                        columns.Bound(p => p.Identidad).Title("Identidad").Width(140);
+                        columns.Bound(p => p.NombreEmpleado).Title("Nombre Empleado").Width(200);
+                        columns.Bound(p => p.Correo).Width(200);
+                        columns.Bound(p => p.Genero).Width(100).Title("Género").ClientTemplate("#if(Genero==2) { #Femenino#}else if(Genero==1) { #Masculino#} #").Filterable(true);
+                        columns.Bound(p => p.Telefono).Width(130).Title("Teléfono");
+
+                    })
+
+
+                    .ToolBar(tools =>
+                    {
+
+                        //tools.Create();
+
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()"});
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("EmpleadosReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("EmpleadosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdEmpleado);
+                        model.Field(p => p.IdEmpleado).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "Employees"))
+                   //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
+                   //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
+                   .Destroy(destroy => destroy.Action("Delete", "Employees").Type(HttpVerbs.Post))
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+<script>
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployees").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployees").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+<div id="numEmployees">
+    @await Html.PartialAsync("pvwAddEmployees", new ERPMVC.DTO.EmployeesDTO { IdEmpleado = 0 })
+</div>
+

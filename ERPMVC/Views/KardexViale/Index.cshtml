@@ -1,0 +1,19 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Ajuste de kardex";
+}
+
+<script>
+
+      function AddAjusteKardex() {
+          $('#ModalCompanyInfo').find(':input').not(':submit').val('');
+
+          $('#ModalCompanyInfo').modal('show');
+          $("#CompanyInfoId").val('0');
+      }
+</script>
+
+<div id="NumCompanyInfo">
+    @await Html.PartialAsync("pvwAddAjusteKardex", new ERPMVC.DTO.KardexVialeDTO { Id = 0})
+</div>

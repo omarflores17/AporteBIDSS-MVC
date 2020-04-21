@@ -1,0 +1,285 @@
+﻿@model ERPMVC.DTO.RegistroGastosDTO
+@using Kendo.Mvc.UI
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+        {"required","Valor requerido" }
+    };
+
+}
+<script>
+    function customFunction(input) {
+        if (input.attr('name') === "Id" && input.val() === "0") {
+            return false;
+        }
+
+    }
+</script>
+
+<div id="ModalRegistroGastos" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Registro de Gastos</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmRegistroGastos" kendo-validator="true" kendo-message="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveRegistroGastos"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-0" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id</label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Detalle" class=" control-label" style="width:100%">Descripción</label>
+                                                    <textarea type="text" asp-for="Detalle" id="Detalle" name="Detalle" onkeyup="this.value=Numeros(this.value)" class="form-control" required data-required-msg="La Descripción es requerida." maxlength="300" autocomplete="off" style="width:100%" onchange="PrevenirCambios()"></textarea>
+                                                    <span asp-validation-for="Detalle" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="TipoGastosId" class="control-label">Tipo de gasto</label>
+                                                    <kendo-dropdownlist name="TipoGastosId"
+                                                                        for="@Model.TipoGastosId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar tipo de gasto"
+                                                                        datatextfield="Descripcion"
+                                                                        datavaluefield="Id"
+                                                                        required data-required-msg="El tipo de gasto es requerido."
+                                                                        style=" width: 100%"
+                                                                        onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "TipoGastos")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="TipoGastosId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label">Sucursal</label>
+                                                    <kendo-dropdownlist name="BranchId"
+                                                                        for="@Model.BranchId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar la sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        required data-required-msg="La sucursal es requerida."
+                                                                        style=" width: 100%"
+                                                                        onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBranch", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Identidad" class=" control-label" style="width:100%">Identidad</label>
+                                                    <input type="text" asp-for="Identidad" name="Identidad" class="form-control" autocomplete="off" style="width:100%" onchange="PrevenirCambios()" required data-required-msg="La identidad es requerido." onKeyPress="return soloNumeros(event)" maxlength="16" />
+                                                    <span asp-validation-for="Identidad" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="monto" class="control-label" style="width:100%">Monto</label>
+                                                    <kendo-numerictextbox name="monto"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          id="monto"
+                                                                          maxlength="20"
+                                                                          onchange="validacion();"
+                                                                          required data-required-msg="El monto es requerido" validationMessage="El monto no puede ir vacio"
+                                                                          onclick="PrevenirCambios()"
+                                                                          style="width:100%"
+                                                                          value="Model.monto" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        required data-required-msg="El Estado es requerido."
+                                                                        style=" width: 100%"
+                                                                        onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Documento" class=" control-label" style="width:100%">Documento</label>
+                                                    <textarea type="text" asp-for="Documento" id="Documento" name="Documento" onkeyup="this.value=Numeros(this.value)" class="form-control" required data-required-msg="La Descripción es requerida." maxlength="300" autocomplete="off" style="width:100%" onchange="PrevenirCambios()"></textarea>
+                                                    <span asp-validation-for="Documento" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button id="btnFundingInterestRate" class="btn btn-success" type="button" onclick="SaveRegistroGastos()">Guardar</button>
+                                        <button type="button" class="btn btn-default" onclick="CerrarModal()">Cerrar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+     function Numeros(string) {
+        var out = '';
+        var filtro = 'abcdefghijklmnñopqrstuvwxyzáéíóúABCDEFGHIJKLMNÑOPQRSTUVWXYZ.-()%" ';
+        for (var i = 0; i < string.length; i++)
+            if (filtro.indexOf(string.charAt(i)) != -1)
+                out += string.charAt(i);
+        return out;
+    }
+    function pierdeFoco(e) {
+        var valor = e.value.replace(/^0*/, '');
+        e.value = valor;
+    }
+    var changes = false;
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Aceptar"
+            }, function () {
+                $('#ModalRegistroGastos').modal('hide');
+            });
+        } else {
+            $('#ModalRegistroGastos').modal('hide');
+        }
+    }
+
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+
+       function SaveRegistroGastos(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+            $("#btnFundingInterestRate").hide();
+            $("#btnFundingInterestRate").prop("disabled", true);
+
+            var displayedData = $("#gridRegistroGastos").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'BranchId': $("#BranchId").val(),
+                'Detalle': $("#Detalle").val(),
+                'monto': $("#monto").val(),
+                'Documento': $("#Documento").val(),
+                'Identidad': $("#Identidad").val(),
+                'TipoGastosId': $("#TipoGastosId").val(),
+                'Concepto': $("#TipoGastosId").data("kendoDropDownList").text(),              
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                '_RegistroGastos': displayedData,
+            };
+
+
+            var validator = $("#frmRegistroGastos").data("kendoValidator");
+                 var status = $(".status");
+
+            console.log('VERIFICAR',dataObject)
+                if (validator.validate()) {
+                    $.ajax({
+                        url: '@Url.Action("SaveRegistroGastos", "RegistroGastos")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Gasto", "Almacenado con éxito", "success");
+                            RefrescarGrid();
+
+                            $('#ModalRegistroGastos').modal('hide');
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                }
+                            }, false);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal("Error", "Se produjo un error al guardar el gasto");
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Datos invalidos en el formulario!")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnFundingInterestRate").show();
+            $("#btnFundingInterestRate").prop("disabled", false);
+    }
+    function validacion() {
+        debugger;
+        console.log();
+        if ($('#DefaultSellingPrice').val() == 0) {
+            alert('Ingrese el precio de venta');
+            $('#DefaultSellingPrice').val(' ');
+            return false;
+           
+        } else {
+
+        }
+    };
+
+    $(document).ready(function () {
+            $("#Identidad").kendoMaskedTextBox({
+                mask: "0000-0000-00000"
+            });
+        });
+</script>

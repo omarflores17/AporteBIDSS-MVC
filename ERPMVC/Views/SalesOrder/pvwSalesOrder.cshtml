@@ -1,0 +1,383 @@
+﻿@model ERPMVC.Models.SalesOrder
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+        {"required","Valor requerido" }
+    };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+
+
+
+
+<script>
+
+
+
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        //if (input.attr('name') === "SubProductId" && input.val() === "0") {
+        //    return false;
+        //}
+
+        if (input.attr('name') === "CurrencyId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "Quantity" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Price" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+            return false;
+        }
+
+
+
+        return true;
+    }
+</script>
+
+<div id="divPEPSFind">
+    @await Html.PartialAsync("~/Views/PEPS/PEPSFind.cshtml")
+</div>
+
+<div id="divBlackListFind">
+    @await Html.PartialAsync("~/Views/BlackListCustomers/BlackListFind.cshtml")
+</div>
+
+<div id="divONULISTFind">
+        @await Html.PartialAsync("~/Views/ONU/ONULISTFind.cshtml")
+</div>
+
+<div id="divOFACFind">
+    @await Html.PartialAsync("~/Views/OFAC/Index.cshtml")
+</div>
+
+
+<div class="card card-outline-inverse" id="myModalSalesOrder">
+    <div class="card-header">
+        <h3 class="m-b-0 text-white">Cotización</h3>
+        <button type="button" class="close" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="card-body">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                                  data-ajax="true"
+                                  data-ajax-method="post"
+                                  method="post" class="validation-wizard wizard-circle">
+
+                                <input type="hidden" asp-for="IdEstado" value=1 />
+                                <input type="hidden" asp-for="Estado" value="Activo" />
+
+                                <div class="row">
+                                    <div class="col-sm-4 col-md-4" hidden>
+                                        <div class="form-group">
+                                            <label asp-for="SalesOrderId" class="control-label"></label>
+                                            <kendo-numerictextbox name="SalesOrderId"
+                                                                  format="n"
+                                                                  min="0"
+                                                                  disabled
+                                                                  max="99999999"
+                                                                  step="1"
+                                                                  style="width: 100%;"
+                                                                  value="Model.SalesOrderId" />
+                                            <span asp-validation-for="SalesOrderId" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label asp-for="Plazo" class="control-label" style="width:100%"></label>
+                                            <input type="text" asp-for="Plazo" required data-required-msg="El Plazo es requerido." name="Plazo" class="form-control required " onchange="CalcularTotalDocumento();" style="min-width: 100%" onKeyPress="return soloNumeros(event)" />
+                                            <span asp-validation-for="Plazo" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+
+                        <div id="salesorderdetail">
+                            @await Html.PartialAsync("pvwSalesOrderDetail", Model)
+                        </div>
+
+                        @*campos ocultos de los totales*@
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="SinFinaciar" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="SinFinaciar"
+                                                          format="n2"
+                                                          id="SinFinaciar"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.SinFinaciar" />
+
+                                    <span asp-validation-for="SinFinaciar" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Impuesto" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="Impuesto"
+                                                          format="n2"
+                                                          id="Impuesto"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.Impuesto" />
+
+                                    <span asp-validation-for="Impuesto" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ValorContado" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="ValorContado"
+                                                          format="n2"
+                                                          id="ValorContado"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.ValorContado" />
+
+                                    <span asp-validation-for="ValorContado" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="TotalContrato" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="TotalContrato"
+                                                          format="n2"
+                                                          id="TotalContrato"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.TotalContrato" />
+
+                                    <span asp-validation-for="TotalContrato" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4" hidden>
+                                <div class="form-group">
+                                    <label asp-for="PrimaMonto" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="PrimaMonto"
+                                                          format="n2"
+                                                          id="PrimaMonto"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.PrimaMonto" />
+
+                                    <span asp-validation-for="PrimaMonto" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ValorPrima" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="ValorPrima"
+                                                          format="n2"
+                                                          id="ValorPrima"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          onchange="CalcularTotalDocumento();"
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.ValorPrima" />
+
+                                    <span asp-validation-for="ValorPrima" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="SaldoCredito" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="SaldoCredito"
+                                                          format="n2"
+                                                          id="SaldoCredito"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.SaldoCredito" />
+
+                                    <span asp-validation-for="SaldoCredito" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Finaciar" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="Finaciar"
+                                                          format="n2"
+                                                          id="Finaciar"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.Finaciar" />
+
+                                    <span asp-validation-for="Finaciar" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="ValorCuota" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="ValorCuota"
+                                                          format="n2"
+                                                          id="ValorCuota"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.ValorCuota" />
+
+                                    <span asp-validation-for="ValorCuota" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="InteresesFinaciar" class="control-label" style="width:100%"></label>
+                                    <kendo-numerictextbox name="InteresesFinaciar"
+                                                          format="n2"
+                                                          id="InteresesFinaciar"
+                                                          spinners="false"
+                                                          min="0"
+                                                          required
+                                                          disabled
+                                                          step="1"
+                                                          style="width:100%"
+                                                          value="Model.InteresesFinaciar" />
+
+                                    <span asp-validation-for="InteresesFinaciar" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button id="btnCotizacion" type="submit" class="btn btn-success float-right" onclick="SaveCotizacion()">Nueva Cotización</button>
+                            <button type="button" class="btn btn-default">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script>
+
+        function clearsession() {
+            var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+
+
+        function AddJournalEntry() {
+            clearsession();
+            var dataSource = $("#gridCotizacionesDetail").data("kendoGrid").dataSource;
+            var raw = dataSource._data;
+            console.log(raw);
+            debugger;
+            for (var i = dataSource._data.length - 1; i >= 0; i--) {
+                item = raw[i];
+                dataSource.remove(item);
+            }
+           // $('#ModalJournalEntry').find(':input').not(':submit').val('');
+           // $('#ModalJournalEntry').modal('show');
+            $("#SalesOrderId").val('0');
+        }
+
+                    function GetProductIdS() {
+                        return { 'ProductId': $("#ProductId").val() }
+                    }
+
+
+                    //function RefreshCotizaciones() {
+                    //    var grid = $("#gridCotizaciones").getKendoGrid();
+                    //    grid.dataSource.read();
+                    //}
+      
+        function SaveCotizacion(e) {
+            //valores de contrato
+            debugger;
+            Plazo: $("#Plazo").val();
+            Cantidad: $("#Cantidad").val();
+            Precio: $("#Precio").val();
+            Serie: $("#Serie").val();
+            Modelo: $("#Modelo").val();
+            Monto: $("#Monto").val();
+            FundingInterestRate: $("#Funding").val();
+            Tax: $("#PorcentajeTax").val();
+            Valor_prima: $("#prima").val();
+            PorcentajeDescuento: $("#prima").val();
+            SinFinaciar: $("#SinFinaciar").val();
+            Impuesto: $("#Impuesto").val();
+            PrimaMonto: $("#PrimaMonto").val();
+            Finaciar: $("#Finaciar").val();
+            ValorContado: $("#ValorContado").val();
+            SaldoCredito: $("#SaldoCredito").val();
+            Valorprima: $("#ValorPrima").val();
+            ValorCuota: $("#ValorCuota").val();
+            TotalContrato: $("#TotalContrato").val();
+            InteresesFinaciar: $("#InteresesFinaciar").val();
+        }
+
+        
+
+    </script>

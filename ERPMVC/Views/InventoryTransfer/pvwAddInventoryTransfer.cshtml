@@ -1,0 +1,536 @@
+﻿@model ERPMVC.Models.InventoryTransfer
+@addTagHelper *, Kendo.Mvc
+@{Layout = null;
+    var messages = new Dictionary<string, string>() {
+        {"required","Valor requerido" }
+    };
+
+}
+<script>
+    //Limpia la variable de session
+     function clearsession() {
+            var dataObject = ["listadoproductos"];
+                $.ajax({
+                   url: '@Url.Action("ClearSession","Common")',
+                   method: 'POST',
+                   datatype: "json",
+                   contentType: 'application/json',
+                   async: false,
+                   data: JSON.stringify(dataObject),
+                   success: function (result) {
+                         //  $('#myModalSalesOrder').modal('show');
+                   },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                           alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+    }
+    $(document).ready(function () {
+       
+        if ($("#EstadoId").val() == 10) {
+            $("#btnAprobar").hide();
+            document.getElementById("ReceivedByEmployeeId").readOnly = true;
+            document.getElementById("FechaR").style.display = "block";
+            document.getElementById("DateReceived").readOnly = true;
+        }
+        if ($("#EstadoId").val() == 7 || $("#EstadoId").val() == 0|| $("#EstadoId").val() == 10) {           
+            $("#btnAprobar").hide();
+        }
+        
+        if ($("#EstadoId").val() == 8|| $("#EstadoId").val() == 10) {
+            $("#btnGuardar").hide();
+            $("#btnEnviar").hide();
+            $("#btnActualizarContratoDetalle").hide();  
+            $("#btnAprobar").hide();
+            document.getElementById("Recibir").style.display = "block"; 
+            document.getElementById("Description").readOnly = true;
+            document.getElementById("NumeroSAR").readOnly = true;
+            document.getElementById("Rango").readOnly = true;
+            document.getElementById("CAI").readOnly = true;
+            document.getElementById("SourceBranchId").readOnly = true;
+            document.getElementById("TargetBranchId").readOnly = true;
+            document.getElementById("GeneratedbyEmployeeId").readOnly = true;
+            document.getElementById("CarriedByEmployeeId").readOnly = true;
+            document.getElementById("DateGenerated").readOnly = true;
+            document.getElementById("DepartureDate").readOnly = true;
+            document.getElementById("DocumentId").readOnly = true;
+            document.getElementById("Productos").style.display = "none";
+            $("Description").attr("readonly","readonly");
+        }
+        if ($("#EstadoId").val() == 8 && $("#TargetBranchId").val() ==@ViewData["branch"]) {
+            $("#btnAprobar").show();
+            document.getElementById("Recibir").style.display = "block";
+            document.getElementById("FechaR").style.display = "block";
+            $(document).ready(function () {
+                $('#ReceivedByEmployeeId').val(0);
+        var numerictextbox = $("#ReceivedByEmployeeId").data("kendoDropDownList");
+        numerictextbox.focus();
+       
+        $('#ReceivedByEmployeeId').data("kendoDropDownList").open();
+    });
+        }
+
+
+        
+        clearsession();
+    });
+    function Numeros(string) {
+        var out = '';
+        var filtro = 'abcdefghijklmnñopqrstuvwxyzáéíóúABCDEFGHIJKLMNÑOPQRSTUVWXYZ.-()%" ';
+        for (var i = 0; i < string.length; i++)
+            if (filtro.indexOf(string.charAt(i)) != -1)
+                out += string.charAt(i);
+        return out;
+    }
+    function PrevenirCambios() {
+        changes = true;
+    }
+</script>
+
+<div class="card card-outline-inverse">
+    <div class="card-header">
+        <h3 class="m-b-0 text-white">Transferencia de inventario</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">                 
+                    <form id="frmUnitOfMeasure" kendo-validator="true" kendo-messages="messages"
+                          data-ajax="true"
+                          data-ajax-method="post"
+                          method="post" class="validation-wizard wizard-circle">
+                            <div class="row" hidden>
+                                <div class="col-sm-12 col-md-12">
+                                    <div class="form-group">
+                                        <label asp-for="Id" class="control-label" style="width:100%">Id</label>
+                                        <input asp-for="Id" class="form-control disabled" style="min-width: 100% !important;" disabled />
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                        <textarea type="text" asp-for="Description" id="Description" name="Description" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" required data-required-msg="La Descripción es requerida."></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" hidden>
+                                    <div class="form-group">
+                                        <label asp-for="SourceBranchId" class="control-label">Origen</label>
+                                        <kendo-dropdownlist id="SourceBranchId" name="SourceBranchId" for="SourceBranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione la sucursal de origen"
+                                                            datatextfield="BranchName"
+                                                            enable="true"
+                                                            datavaluefield="BranchId"
+                                                            required
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Branch")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="SourceBranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="TargetBranchId" class="control-label">Destino</label>
+                                        <kendo-dropdownlist id="TargetBranchId" name="TargetBranchId" for="TargetBranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione la sucursal de destino"
+                                                            datatextfield="BranchName"
+                                                            enable="true"
+                                                            datavaluefield="BranchId"
+                                                            required
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Branch")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="TargetBranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="GeneratedbyEmployeeId" class="control-label">Generador Por</label>
+                                        <kendo-dropdownlist id="GeneratedbyEmployeeId" name="GeneratedbyEmployeeId"
+                                                            for="@Model.GeneratedbyEmployeeId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccionar Empleado"
+                                                            datatextfield="NombreEmpleado"
+                                                            datavaluefield="IdEmpleado"
+                                                            required data-required-msg="Generado por es requerido"
+                                                            style="width: 100%;" onchange="PrevenirCambios()">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Employees")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="GeneratedbyEmployeeId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="CarriedByEmployeeId" class="control-label">Llevado Por</label>
+                                        <kendo-dropdownlist id="CarriedByEmployeeId" name="CarriedByEmployeeId"
+                                                            for="@Model.CarriedByEmployeeId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccionar Empleado"
+                                                            datatextfield="NombreEmpleado"
+                                                            datavaluefield="IdEmpleado"
+                                                            required data-required-msg="Llevado por es requerido"
+                                                            style="width: 100%;" onchange="PrevenirCambios()">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Employees")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="CarriedByEmployeeId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">                               
+                                <div class="col-md-3" id="FechaC">
+                                    <div class="form-group">
+                                        <label asp-for="DateGenerated" class="control-label" style="width: 100%;">Fecha Generado</label>
+                                        <kendo-datetimepicker id="DateGenerated" name="DateGenerated"
+                                                              style="width: 100%;"
+                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                              time-format="hh:mm:ss"
+                                                              data-val-required="La Fecha generado es requerida"
+                                                              value="Model.DateGenerated" />
+                                        <span asp-validation-for="DateGenerated" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" id="FechaE">
+                                    <div class="form-group">
+                                        <label asp-for="DepartureDate" class="control-label" style="width: 100%;">Fecha Enviado</label>
+                                        <kendo-datetimepicker id="DepartureDate" name="DepartureDate"
+                                                              style="width: 100%;"
+                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                              time-format="hh:mm:ss"
+                                                              data-val-required="La Fecha generado es requerida"
+                                                              value="Model.DepartureDate" />
+                                        <span asp-validation-for="DepartureDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="DocumentId" class=" control-label" style="width:100%">Documento</label>
+                                        <textarea type="text" asp-for="DocumentId" id="DocumentId" name="DocumentId" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" required data-required-msg="El Documento es requerido."></textarea>
+                                        <span asp-validation-for="DocumentId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class=" col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="EstadoId" class="control-label">Estado</label>
+                                        <kendo-dropdownlist name="EstadoId" enable="false"
+                                                            for="@Model.EstadoId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Creando"
+                                                            datatextfield="NombreEstado"
+                                                            datavaluefield="IdEstado"
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("GetEstadoByGrupo", "Estados", new { pIdEstado = 3 })" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="EstadoId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3" hidden>
+                                    <div class="form-group">
+                                        <label asp-for="NumeroSAR" class=" control-label" style="width:100%">SAR</label>
+                                        <input type="text" asp-for="NumeroSAR" id="NumeroSAR" name="NumeroSAR" class="form-control" maxlength="300" autocomplete="off" style="width:100%" onKeyPress="return soloNumeros(event)" required data-required-msg="El numerode SAR es requerido." />
+                                        <span asp-validation-for="NumeroSAR" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" hidden>
+                                    <div class="form-group">
+                                        <label asp-for="Rango" class=" control-label" style="width:100%">Rango</label>
+                                        <input type="text" asp-for="Rango" id="Rango" name="Rango" class="form-control" maxlength="300" autocomplete="off" style="width:100%" onKeyPress="return soloNumeros(event)" required data-required-msg="El rango es requerido." />
+                                        <span asp-validation-for="Rango" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" hidden>
+                                    <div class="form-group">
+                                        <label asp-for="CAI" class=" control-label" style="width:100%">CAI</label>
+                                        <input type="text" asp-for="CAI" id="CAI" name="CAI" class="form-control" maxlength="300" autocomplete="off" style="width:100%" onKeyPress="return soloNumeros(event)" required data-required-msg="El CAI es requeridO." />
+                                        <span asp-validation-for="CAI" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" id="Recibir" style="display:none;">
+                                    <div class="form-group">
+                                        <label asp-for="ReceivedByEmployeeId" class="control-label"> Recibido por</label>
+                                        <kendo-dropdownlist name="ReceivedByEmployeeId"
+                                                            for="@Model.ReceivedByEmployeeId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccionar Empleado"
+                                                            datatextfield="NombreEmpleado"
+                                                            datavaluefield="IdEmpleado"
+                                                            required data-required-msg="Recibido de es requerido"
+                                                            style="width: 100%;" onchange="PrevenirCambios()">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Employees")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="ReceivedByEmployeeId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3" id="FechaR" style="display:none">
+                                    <div class="form-group">
+                                        <label asp-for="DateReceived" class="control-label" style="width: 100%;">Fecha Recibido</label>
+                                        <kendo-datetimepicker id="DateReceived" name="DateReceived"
+                                                              style="width: 100%;"
+                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                              time-format="hh:mm:ss"
+                                                              data-val-required="La Fecha generado es requerida"
+                                                              value="Model.DateReceived" />
+                                        <span asp-validation-for="DateReceived" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <div id="InventoryDetail">
+                            @await Html.PartialAsync("pvwInventoryTransferLines", new ERPMVC.Models.InventoryTransferLine { Id = 0, InventoryTransferId = Model.Id })
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnGuardar" class="btn btn-success" onclick="GuardarTransferencia(this);">Guardar</button>
+                            <button type="button" id="btnEnviar" class="btn btn-light" onclick="EnviarTransferencia(this);">Enviar</button>
+                            <button type="button" id="btnAprobar" class="btn btn-light" onclick="AprobarTransferencia(this);">Aprobar</button>
+                            <a asp-action="Menu" id="btncerrar" class="btn btn-default">Cerrar</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+        //validar espacios
+        function validarEspacios() {
+            //Funcion no aceptar espacios en el textbox
+            document.addEventListener("input", function () {
+                $("input[type='text']", 'form').each(function () {
+                    _id = $(this).attr("id");
+                    _value = document.getElementById(_id).value;
+                    document.getElementById(_id).value = _value.trimStart();
+                });
+            })
+        }
+        //solo acepte numeros
+    function soloNumeros(e) {
+        debugger;
+
+        var key = window.Event ? e.which : e.keyCode
+        if (key == 13) {
+            //para desplegar los drop de producto
+            var numerictextbox = $("#ProductId").data("kendoDropDownList");
+            numerictextbox.focus();
+            $('#ProductId').data("kendoDropDownList").open();
+        }
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+        //para guardar registro
+    function GuardarTransferencia(e) {
+        $("#btnGuardar").hide();
+        $("#btnEnviar").hide();
+        debugger
+        var validadetalle = true;
+            var displayedData = $("#gridInventoryTransferLine").data().kendoGrid.dataSource.view();
+            for (var i = 0; i < displayedData.length; i++) {
+                displayedData[i].Id = 0;
+            }
+        if (validadetalle) {
+            var dataObject = {
+                 'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                 'Description': $("#Description").val(),
+                 'DocumentId': $("#DocumentId").val(),
+                 'TargetBranchId': $("#TargetBranchId").val(),
+                 'GeneratedbyEmployeeId': $("#GeneratedbyEmployeeId").val(),
+                 'DateGenerated': $("#DateGenerated").getKendoDateTimePicker().value().toJSON(),
+                 'DepartureDate': $("#DepartureDate").getKendoDateTimePicker().value().toJSON(),
+                 'DateReceived': $("#DateReceived").getKendoDateTimePicker().value().toJSON(),
+                 'ReceivedByEmployeeId': 18,
+                 'CarriedByEmployeeId': $("#CarriedByEmployeeId").val(),
+                 'EstadoId': 7,
+                 'CAI': $("#CAI").val(),
+                 'NumeroSAR': $("#NumeroSAR").val(),
+                 'Rango': $("#Rango").val(),
+                 'TipoDocumentoId': 1,
+                 'InventoryTransferLines': displayedData,
+            };
+            console.log("Campos", dataObject);
+            $.ajax({
+                url: '@Url.Action("SaveInventoryTransfer", "InventoryTransfer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    swal({
+                        title: "Transferencia",
+                        text: "Se han guardado los cambios",
+                        type: "success"
+                    },
+                    function () {
+                        window.location.href = "@Url.Action("Index", "InventoryTransfer")";
+                     });
+
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                            window.location.href = "@Url.Action("Index", "InventoryTransfer")";
+                        }
+                    }, false);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    
+                    swal("Error", "Ha ocurrido un error al guardar los cambios" + textStatus, "error");
+                }
+            });
+        }
+    }
+
+    function EnviarTransferencia(e) {
+        $("#btnGuardar").hide();
+        $("#btnEnviar").hide();
+        debugger
+        var validadetalle = true;
+        var displayedData = $("#gridInventoryTransferLine").data().kendoGrid.dataSource.view();
+        debugger;
+        if ( $("#Id").val()==0) {
+            for (var i = 0; i < displayedData.length; i++) {
+                displayedData[i].Id = 0;
+            }
+        }
+        if (validadetalle) {
+            var dataObject = {
+                 'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                 'Description': $("#Description").val(),
+                 'DocumentId': $("#DocumentId").val(),
+                 'TargetBranchId': $("#TargetBranchId").val(),
+                 'GeneratedbyEmployeeId': $("#GeneratedbyEmployeeId").val(),
+                 'DateGenerated': $("#DateGenerated").getKendoDateTimePicker().value().toJSON(),
+                 'DepartureDate': $("#DepartureDate").getKendoDateTimePicker().value().toJSON(),
+                 'DateReceived': $("#DateReceived").getKendoDateTimePicker().value().toJSON(),
+                 'ReceivedByEmployeeId': 18,
+                 'CarriedByEmployeeId': $("#CarriedByEmployeeId").val(),
+                 'EstadoId': 8,
+                 'CAI': $("#CAI").val(),
+                 'NumeroSAR': $("#NumeroSAR").val(),
+                 'Rango': $("#Rango").val(),
+                 'TipoDocumentoId': 1,
+                 'InventoryTransferLines': displayedData,
+            };
+            console.log("Campos", dataObject);
+            $.ajax({
+                url: '@Url.Action("SaveInventoryTransfer", "InventoryTransfer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    swal({
+                        title: "Transferencia",
+                        text: "Se han guardado los cambios",
+                        type: "success"
+                    },
+                    function () {
+                        window.location.href = "@Url.Action("Index", "InventoryTransfer")";
+                     });
+
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                            window.location.href = "@Url.Action("Index", "InventoryTransfer")";
+                        }
+                    }, false);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $("#btnGuardar").show();
+                    $("#btnGuardar").prop("disabled", true);
+                    $("#btnEnviar").show();
+                    $("#btnEnviar").prop("disabled", true);
+                    swal("Error", "Ha ocurrido un error al guardar los cambios" + textStatus, "error");
+                }
+            });
+        }
+    }
+
+    function AprobarTransferencia(e) {
+        $("#btnGuardar").hide();
+        $("#btnEnviar").hide();
+        $("#btnAprobar").hide();
+        debugger
+        var validadetalle = true;
+            var displayedData = $("#gridInventoryTransferLine").data().kendoGrid.dataSource.view();
+        if (validadetalle) {
+            var dataObject = {
+                 'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                 'Description': $("#Description").val(),
+                 'DocumentId': $("#DocumentId").val(),
+                 'TargetBranchId': $("#TargetBranchId").val(),
+                 'DateGenerated': $("#DateGenerated").getKendoDateTimePicker().value().toJSON(),
+                 'DepartureDate': $("#DepartureDate").getKendoDateTimePicker().value().toJSON(),
+                 'DateReceived': $("#DateReceived").getKendoDateTimePicker().value().toJSON(),
+                 'GeneratedbyEmployeeId': $("#GeneratedbyEmployeeId").val(),
+                 'ReceivedByEmployeeId': $("#ReceivedByEmployeeId").val(),
+                 'CarriedByEmployeeId': $("#CarriedByEmployeeId").val(),
+                 'EstadoId': 10,
+                 'CAI': $("#CAI").val(),
+                 'NumeroSAR': $("#NumeroSAR").val(),
+                 'Rango': $("#Rango").val(),
+                 'TipoDocumentoId': 1,
+                 'InventoryTransferLines': displayedData,
+            };
+            console.log("Campos", dataObject);
+            $.ajax({
+                url: '@Url.Action("SaveInventoryTransfer", "InventoryTransfer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    swal({
+                        title: "Transferencia",
+                        text: "Se han guardado los cambios",
+                        type: "success"
+                    },
+                    function () {
+                        window.location.href = "@Url.Action("Index2", "InventoryTransfer")";
+                     });
+
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                        }
+                    }, false);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $("#btnGuardar").show();
+                    $("#btnGuardar").prop("disabled", true);
+                    $("#btnEnviar").show();
+                    $("#btnEnviar").prop("disabled", true);
+                    swal("Error", "Ha ocurrido un error al guardar los cambios" + textStatus, "error");
+                }
+            });
+        }
+    }
+
+</script>

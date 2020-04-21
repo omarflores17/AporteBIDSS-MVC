@@ -1,0 +1,376 @@
+﻿@model ERPMVC.Models.InventoryTransferLine
+@{
+    var Linea = ViewData["producto"] as IEnumerable<ERPMVC.Models.Product>;
+}
+<style>
+    #gridCotizacionesDetail .k-grid-content {
+        min-height: 400px;
+        max-height: 500px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $("#QtyStock").val("");       
+    });
+
+   function Cantidad() {
+        if ($("#ProductId").val() > 0) {
+            $("#Total").val(0);
+        }
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("VerSaldo", "KardexViale")",
+            data: $("#ProductId").val(),
+            contentType: "application/json; charset=utf-8",
+         dataType: "json",
+            success: function (data) {
+                console.log(data);
+                    $("#Total").val(data);
+                },
+            error: function (req, status, error) {
+                alert(error);
+            }
+        });
+    }
+
+    function SetProductName() {
+        if ($("#ProductId").val() > 0) {
+
+            $("#ProductName").val($("#ProductId").data("kendoDropDownList").text());
+            var dataObject = { ProductId: $("#ProductId").val() };
+            $.ajax({
+                url: '@Url.Action("GetProductById", "Product")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    $("#Costo").val(result.DefaultBuyingPrice);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+    //Setear valores
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+    //solo acepte numeros
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+    //get para agregar un registro al grid
+    function GetInventoryTransferLine() {
+        //closesaleorderline();
+        var subproductname = '', unidaddemedida = '';
+        if ($("#ProductId") != null) {
+            if ($("#ProductId").data("kendoDropDownList") != null) {
+                subproductname = $("#ProductId").data("kendoDropDownList").text();
+            }
+        }
+
+        var displayedData = $("#gridInventoryTransferLine").data().kendoGrid.dataSource.data();
+        var id = -999999;
+         debugger;
+        if (Number($("#Id").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].Id > id)
+                        id = displayedData[i].Id;
+                }
+
+                id = id + 1;
+            }
+            else if ($("#QtyStock").val()>0) {
+                id = 1;
+            }
+
+        }
+        else {
+         }
+        return {
+            Id: id,
+            InventoryTransferId: @Model.InventoryTransferId,
+            ProductId: $("#ProductId").val(),
+            QtyStock: $("#QtyStock").val(),
+            ProductName: $("#ProductId").data("kendoDropDownList").text(),
+            }
+    }
+    //metodo que levanta el boton agregar
+    function AddContratoDetalle(e) {
+        debugger;
+        var displayedData = $("#gridInventoryTransferLine").data().kendoGrid.dataSource.view();
+        var a =displayedData.length;
+        if ($("#QtyStock").val() <= 0) {
+            swal("Error", "La Cantidad no puede ser 0 o negativa.");
+        }else if (parseInt($("#QtyStock").val()) > parseInt($("#Total").val())) {
+            swal("Error", "Existencias insuficientes.");
+        } else if (a > 0) {
+            var c = $("#ProductId").val();
+            debugger;
+            for (var i = 0; i < a; i++) {
+                console.log(c);
+                console.log(displayedData[i].ProductId);
+            if (c == displayedData[i].ProductId)
+            {
+                if ((parseInt($("#QtyStock").val()) + parseInt(displayedData[i].QtyStock)) > parseInt($("#Total").val()))
+                {
+                    swal("Error", "Existencias insuficientes.");
+                }
+
+            } else if ($("#ProductId").val()){
+            try {
+                RefreshCotizacionesDetail();
+                $("#QtyStock").val(0);
+                $("#Total").val(0);
+                $("#Costo").val(0);
+            } catch (e) {
+                $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            }
+        }              
+            }
+        }else if ($("#ProductId").val() == 0 ) {
+            swal("Error", "seleccione todos los campos");
+        }else if ($("#ProductId").val() > 0) {
+            try {
+                RefreshCotizacionesDetail();
+                $("#QtyStock").val(0);
+                $("#Total").val(0);
+                $("#Costo").val(0);
+            } catch (e) {
+                $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            }
+        }
+    }
+
+    //agrega y refresca en el grid
+    function RefreshCotizacionesDetail() {
+        debugger;
+        var grid = $("#gridInventoryTransferLine").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+        $("#Id").val(0);
+        $("#InventoryTransferId").val('');
+        $("#ProductId").data("kendoDropDownList").value(0);
+        $("#QtyStock").val(0);
+        $("#Total").val(0);
+    }
+    //recargar la pantalla y limpia la variable de sesion
+    $(document).ready(function () {
+        clearsession()
+    });
+
+    //metodo para eliminar
+    function Delete(e) {
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            debugger
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "InventoryTransferLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridInventoryTransferLine").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Trasnferencia detalle");
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal("Error", textStatus, "error");
+                }
+            });
+        }
+    }
+</script>
+
+@{
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                            {"required","Valor requerido" }
+                                         };
+    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+<div class="card-body">
+        <form id="frmcotizar" kendo-validator="true"
+              method="post" class="validation-wizard wizard-circle">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="row" id="div1">
+                        <div class="row" hidden>
+                            <div class="col-md-0" hidden>
+                                <div class="form-group">
+                                    <label asp-for="InventoryTransferId" class="control-label" style="width:100%"></label>
+                                    <input type="number" asp-for="InventoryTransferId" class="form-control" style="min-width:100%" disabled />
+
+                                </div>
+                            </div>
+                            <div class="col-md-0" hidden>
+                                <div class="form-group">
+                                    <label asp-for="Id" class="control-label" style="width:100%"></label>
+                                    <input type="number" asp-for="Id" class="form-control" style="min-width:100%" disabled value="@Model.Id" />
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="Productos">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ProductId" class="control-label" style="width:100%">Seleccione el Producto</label>
+                                    <kendo-dropdownlist name="ProductId" id="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        for="ProductId"
+                                                        option-label="Seleccione el Producto"
+                                                        datatextfield="ProductName"
+                                                        datavaluefield="ProductId"
+                                                        onkeypress=""
+                                                        onchange="Cantidad(); SetProductName();"
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                            <transport>
+                                                <read url="@Url.Action("GetProductConcatenado", "Product")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label class=" control-label" style="width:100%">Cantidad actual</label>
+                                    <input type="text" id="Total" name="Total" onKeyPress="return soloNumeros(event)" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label class=" control-label" style="width:100%">Costo</label>
+                                    <input type="text" id="Costo" name="Costo" onKeyPress="return soloNumeros(event)" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label asp-for="QtyStock" class="control-label" style="width:100%">Cantidad a enviar</label>
+                                    <input type="number" asp-for="QtyStock" id="QtyStock" name="QtyStock" class="k-textbox" style="min-width:100%" />
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btnActualizarContratoDetalle" type="submit" class="btn btn-success float-right" onclick="AddContratoDetalle()">Añadir producto</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+</div>
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.InventoryTransferLine>()
+                        .Name("gridInventoryTransferLine")
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar");
+                            }).Width(150).Title("Acciones");
+
+                            columns.Bound(p => p.InventoryTransferId).Title("Id Linea").Width(150).Visible(false);
+                            columns.Bound(p => p.Id).Title("Id").Width(150).Visible(false);
+                            columns.ForeignKey(p => p.ProductId, (System.Collections.IEnumerable)ViewData["producto"], "ProductId", "ProductName").Title("Nombre").Width(150);
+                            columns.Bound(p =>p.QtyStock).Title("Cantidad").Width(150);
+                            if(@ViewBag.Estado == 8 || @ViewBag.Estado == 10)
+                            {
+                                columns.Bound(p => p.CantidadRecibida).Title("Cantidad recibida").Width(150);
+                                columns.Bound(p => p.Descripcion).Title("Descripcion").Width(150);
+                            }
+
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                    .Clear()
+                    .Contains("Contiene")
+                    .DoesNotContain("No contiene")
+                    .EndsWith("Termina con")
+                    .IsEqualTo("Es igual a")
+                    .IsNotEqualTo("No es igual a")
+                    .IsNull("Es nulo")
+                    .StartsWith("Inicia con")
+
+
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+            ))
+                        .ToolBar(tools =>
+                        {
+                            //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        })
+                        .Editable(e => e.Mode(GridEditMode.InLine))
+                        .Sortable()
+                        .AutoBind(true)
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        // .ClientDetailTemplateId("template")
+                        .Pdf(pdf => pdf.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        //.Events(e=>e.Save("onsave"))
+                        .DataSource(dataSource =>
+                          dataSource
+                            .WebApi()
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.Id);
+                                model.Field(p => p.InventoryTransferId).Editable(false);
+                                model.Field(p => p.Id).Editable(false);
+                                model.Field(p => p.ProductId).Editable(false);
+                                model.Field(p => p.QtyStock).Editable(false);
+                                model.Field(p => p.CantidadRecibida).Editable(true);
+                                model.Field(p => p.Descripcion).Editable(true);
+
+
+
+                            })
+                        .Events(events =>
+                        {
+                            events.Error("error_handler");
+
+                        })
+                    .Read(read => read.Action("GetInventoryTransferLine", "InventoryTransferLine").Data("GetInventoryTransferLine"))
+                    //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                    //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                    )
+        )
+
+    </div>
+</div>

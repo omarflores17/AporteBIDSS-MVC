@@ -1,0 +1,236 @@
+﻿@model ERPMVC.DTO.ProductTypeDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+
+</script>
+
+
+
+<div id="ModalProductType" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tipo de Producto</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmProductType" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveProductType"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="ProductTypeId" class=" control-label" style="width:100%">Id ProductType</label>
+                                                    <input type="text" asp-for="ProductTypeId" name="IdProductType" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="ProductTypeId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+
+
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label asp-for="ProductTypeName" class=" control-label" style="width:100%">Nombre del producto</label>
+                                                    <input type="text" asp-for="ProductTypeName" name="ProductTypeName" maxlength="50" required data-required-msg="El Nombre de Producto es Requerido." class="form-control" style="width:100%" onkeypress="return soloLetras(event)" onchange="PrevenirCambios()" />
+                                                    <span asp-validation-for="ProductTypeName" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        required data-required-msg="El Estado es Requerido."
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" maxlength="200" required data-required-msg="La Descripcion es Requerido." autocomplete="off" style="width:100%"  onchange="PrevenirCambios()" />
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                      
+                                            <div class="modal-footer">
+                                                <button id="btnProductType" class="btn btn-success" type="button" onclick="SaveProductType()"> Guardar </button>
+                                                <button type="button" class="btn btn-default" onclick="CerrarModal()">Cerrar</button>
+                                            </div>
+                                        
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var changes = false;
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+                //closeOnConfirm: true
+            }, function () {
+                $('#ModalProductType').modal('hide');
+            });
+        } else {
+            $('#ModalProductType').modal('hide');
+        }
+    }
+
+
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function RefreshCotizaciones() {
+       // $("#myModalGoodsDelivered").modal('hide');
+        var grid = $("#gridProductType").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+        function SaveProductType(e) {
+            debugger
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnProductType").hide();
+            $("#btnProductType").prop("disabled", true);
+
+            var displayedData = $("#gridProductType").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'ProductTypeId': $("#ProductTypeId").val() === "" ? "0" : $("#ProductTypeId").val(),
+                'ProductTypeName': $("#ProductTypeName").val(),
+                'Description': $("#Description").val(),
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                '_ProductType': displayedData
+            };
+
+             //console.log(JSON.stringify(dataObject));
+             //var form = $("#frmNumeracion");
+             //form.validate();
+            //console.log(dataObject);
+            var validator = $("#frmProductType").data("kendoValidator");
+                 var status = $(".status");
+           // console.log(validator)
+            //console.log('VERIFICAR',displayedData.length)
+            //if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveProductType", "ProductType")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Tipo de Producto", "Guardado Satisfactoriamente", "success");
+
+                            RefreshCotizaciones();
+
+                            $('#ModalProductType').modal('hide');
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                    //Cierras tu ventana
+                                }
+                            }, false);
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            console.log('VERIFICAR')
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+               
+            //}
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Datos invalidos en el formulario!"
+                }, "error");
+            }
+
+            $("#btnProductType").show();
+            $("#btnProductType").prop("disabled", false);
+    }
+</script>

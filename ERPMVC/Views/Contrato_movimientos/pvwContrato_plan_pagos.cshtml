@@ -1,0 +1,56 @@
+﻿@*@model ERPMVC.Models.Contrato_plan_pagos
+@addTagHelper *, Kendo.Mvc
+@{Layout = null;
+    var messages = new Dictionary<string, string>() {
+{"required","Valor requerido" }
+};
+
+}*@
+
+@*
+        <div class="card card-outline-inverse">
+
+        <form id="frmUnitOfMeasure" kendo-validator="true" kendo-messages="messages"
+              data-ajax="true"
+              data-ajax-method="post"
+              method="post" class="validation-wizard wizard-circle">
+            <!-- ID -->
+            <div class="row" hidden>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label asp-for="ContratoId" class="control-label" style="width:100%">Id</label>
+                        <input asp-for="ContratoId" class="form-control disabled" style="min-width: 100% !important;" disabled />
+
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+
+
+
+            </div>
+
+        </form>
+    </div>
+*@
+
+@*<script>
+
+        //validar espacios
+        function validarEspacios() {
+            //Funcion no aceptar espacios en el textbox
+            document.addEventListener("input", function () {
+                $("input[type='text']", 'form').each(function () {
+                    _id = $(this).attr("id");
+                    _value = document.getElementById(_id).value;
+                    document.getElementById(_id).value = _value.trimStart();
+                });
+            })
+        }
+        //solo acepte numeros
+        function soloNumeros(e) {
+            var key = window.Event ? e.which : e.keyCode
+            return ((key >= 48 && key <= 57) || (key == 8))
+        }
+
+</script>*@

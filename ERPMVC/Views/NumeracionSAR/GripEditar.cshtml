@@ -1,0 +1,383 @@
+﻿@model ERPMVC.DTO.DTO_NumeracionSAR
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                               // {"required","Valor requerido" }
+                            };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+function setvaluescai() {
+        var dataObject = {
+            'IdCAI': $("#IdCAI").val()
+        };
+
+        $.ajax({
+            url: '@Url.Action("GetCAIById", "CAI")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (data) {
+                console.log(data);
+                $("#FechaLimite").getKendoDateTimePicker().value(data.FechaLimiteEmision);                                                                       
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                //  $("#btngenerarfactura").show();
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+            });
+
+    }
+
+    function setCantidadOtorgada() {
+        var NoInicio = $("#NoInicio").val() == "" ? 0 : Number($("#NoInicio").val());
+        var NoFin = $("#NoFin").val() == "" ? 0 : Number($("#NoFin").val());
+        $("#CantidadOtorgada").val((NoFin - NoInicio) + 1);
+    }
+</script>
+
+
+
+
+<div id="myModalNumeracion" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Numeración Sar</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmNumeracion" kendo-validator="true" class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdNumeracion" class="control-label" style="width:100%">Id Numeración</label>
+                                                    <input type="text" asp-for="IdNumeracion" name="IdNumeracion" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="IdNumeracion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function setRequiredAttr(evt) {
+                                                    if (evt.sender.dataSource.data().length < 1) {
+                                                        evt.sender.element.removeAttr("data-val-required");
+                                                    }
+                                                    else {
+                                                        evt.sender.element.attr("data-val-required", "El CAI es requerido.");
+                                                    }
+                                                }
+                                            </script>
+                                            <div class="col-md-8">
+                                                @Html.Label("CAI")
+                                                @(Html.Kendo().DropDownList()
+                                                            // .HtmlAttributes(new { data_bind="value:RoleId"})
+                                                            .Name("IdCAI")
+                                                            .DataValueField("IdCAI")
+                                                            .DataTextField("_cai")
+                                                            .Value(Model.IdCAI.ToString())
+                                                            .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                            .HtmlAttributes(new { @style = "width:100%" })
+                                                            .OptionLabel("Seleccione un CAI")
+                                                            .Events(e => e.Change("setvaluescai").DataBound("setRequiredAttr"))
+                                                            //.AutoBind(true)
+                                                            .Enable(true)
+                                                            .DataSource(Source => Source.Read(r => r.Action("GetBOX", "CAI")))
+                                                )
+                                                <span asp-validation-for="IdCAI" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NoInicio" class="control-label" style="width:100%">No. Inicio</label>
+                                                    <input type="text" asp-for="NoInicio" maxlength="8" onchange="setCantidadOtorgada();" onKeyPress="return soloNumeros(event)" required data-required-msg="El No. Inicio es requerido." name="NoInicio" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="NoInicio" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NoFin" class="control-label" style="width:100%">No. Fin</label>
+                                                    <input type="text" asp-for="NoFin" maxlength="8" onchange="setCantidadOtorgada();" onKeyPress="return soloNumeros(event)" required data-required-msg="El No. Fin es requerido." name="NoFin" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="NoFin" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaLimite" class="control-label" style="width:100%">Fecha Límite</label>
+                                                    <kendo-datetimepicker name="FechaLimite"
+                                                                          format="dd/MM/yyyy"
+                                                                          style="width: 100%;"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.FechaLimite"></kendo-datetimepicker>
+                                                    @*<input type="email" asp-for="FechaLimite" class="form-control required " style="width:100%" />*@
+                                                    <span asp-validation-for="FechaLimite" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CantidadOtorgada" class=" control-label" style="width:100%">Cantidad Otorgada</label>
+                                                    <input type="text" asp-for="CantidadOtorgada" name="CantidadOtorgada" disabled class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="CantidadOtorgada" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            @*<div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="SiguienteNumero" class="control-label" style="width:100%">Siguiente Numero</label>
+                                                    <input type="text" asp-for="SiguienteNumero" name="SiguienteNumero" class="form-control required" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="SiguienteNumero" class="text-danger"></span>
+                                                </div>
+                                            </div>*@
+
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GetPuntoEmision() {
+                                                        $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="BranchId"
+                                                                        for="@Model.BranchId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        data-val-required="La sucursal es requerida"
+                                                                        datavaluefield="BranchId"
+                                                                        onchange="GetPuntoEmision();"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4">
+                                                 <script>
+                                                     function GetBranchId() {
+                                                         return {
+                                                             'BranchId': $("#BranchId").data("kendoDropDownList").value()
+                                                         }
+                                                     }
+                                                 </script>
+                                                 <div class="form-group">
+                                                     <label asp-for="IdPuntoEmision" class="control-label"></label>
+                                                     <kendo-dropdownlist name="IdPuntoEmision"
+                                                                         for="@Model.IdPuntoEmision"
+                                                                         auto-bind="false"
+                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                         option-label="Seleccionar Punto Emision"
+                                                                         data-val-required="El punto de emisión es requerido"   
+                                                                         datatextfield="PuntoEmisionCod"
+                                                                         datavaluefield="IdPuntoEmision"
+                                                                         style="width: 100%;">
+                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                                             <transport>
+                                                                 <read url="@Url.Action("GetPuntoEmisionByBranchId", "PuntoEmision")" data="GetBranchId" />
+                                                             </transport>
+                                                         </datasource>
+                                                     </kendo-dropdownlist>
+                                                     <span asp-validation-for="IdPuntoEmision" class="text-danger"></span>
+                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DocTypeId" class="control-label">Tipo Documento</label>
+                                                    <kendo-dropdownlist name="DocTypeId"
+                                                                        for="@Model.DocTypeId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        data-val-required="El tipo doucmento es requerido"
+                                                                        option-label="Seleccionar Tipo Documento "
+                                                                        datatextfield="Codigo"
+                                                                        datavaluefield="IdTipoDocumento"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetTipoDocumento", "TiposDocumento")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="DocTypeId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        
+
+                                        
+                                            @*<div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DocSubType" class="control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="DocSubType" name="DocSubType" class="form-control required" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="DocSubType" class="text-danger"></span>
+                                                </div>
+                                            </div>*@
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        data-val-required="El estado es requerido"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button id="btnumeracion" class="btn btn-success" type="button" onclick="SaveNumeracion()">Guardar</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" name="close">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        $(document).ready(function () {
+            $("#NoInicio").on('paste', function (e) {
+                e.preventDefault();
+            });
+            $("#NoFin").on('paste', function (e) {
+                e.preventDefault();
+            });
+        });
+        function soloNumeros(e) {
+            var key = window.Event ? e.which : e.keyCode
+            return (key >= 48 && key <= 57)
+        }
+        function SaveNumeracion(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnumeracion").hide();
+            $("#btnumeracion").prop("disabled", true);
+
+         //   var displayedData = $("#gridNumeracionSAR").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'IdNumeracion': $("#IdNumeracion").val()===""?"0":$("#IdNumeracion").val(),
+                'IdCAI': $("#IdCAI").val(),
+                '_cai': $("#IdCAI").data("kendoDropDownList").text(),
+                'NoInicio': $("#NoInicio").val(),
+                'NoFin': $("#NoFin").val(),
+                'FechaLimite': $("#FechaLimite").getKendoDateTimePicker().value().toJSON(),
+                'CantidadOtorgada': $("#CantidadOtorgada").val(),
+                'SiguienteNumero': $("#SiguienteNumero").val(),
+                'IdPuntoEmision': $("#IdPuntoEmision").val(),
+                'PuntoEmision': $("#IdPuntoEmision").data("kendoDropDownList").text(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'DocTypeId': $("#DocTypeId").val(),
+                'DocType': $("#DocTypeId").data("kendoDropDownList").text(),
+                'DocSubTypeId': $("#DocSubTypeId").val(),
+                'DocSubType': $("#DocSubType").val(),
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                           //'FechaCreacion': $("#FechaCreacion").val(),
+                           //'FechaModificacion':$("#FechaModificacion").val(),
+                           //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           //'_NumeracionSAR': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmNumeracion").data("kendoValidator");
+                 var status = $(".status");
+
+         //   if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveNumeracionSAR", "NumeracionSAR")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Numeración SAR", "Guardado Satisfactoriamente", "success");
+                            RefrescarGrid();
+
+                            $('#myModalNumeracion').modal('hide');
+
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                }
+                            }, false);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal(textStatus + ": " + XMLHttpRequest.responseText);
+                        }
+                    });
+
+                }
+                else {
+                    swal("Validación", "Ingrese todos los datos en el formulario!", "info");
+                }
+            //}
+            //else {
+            //    notification.show({
+            //        title: "Validacion",
+            //        message: "Debe agregar los productos!"
+            //    }, "error");
+            //   // notification.show("New E-mail","Debe agregar los productos", "info");
+            //    //alert('Debe agregar los productos!!');
+            //}
+
+            $("#btnumeracion").show();
+            $("#btnumeracion").prop("disabled", false);
+        }
+    </script>

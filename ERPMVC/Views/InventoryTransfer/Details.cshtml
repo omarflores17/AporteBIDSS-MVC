@@ -1,0 +1,42 @@
+﻿@model ERPMVC.Models.InventoryTransfer
+@using Microsoft.AspNetCore.Http;
+@{
+    ViewData["Title"] = "Transferencia de inventario";
+}
+
+
+
+<script>
+    function GetInvoiceId() {
+        return { Id: $("#Id").val() }
+    }
+</script>
+
+
+<div id="ContratoDetail">
+    @await Html.PartialAsync("pvwAddInventoryTransfer", Model)
+</div>
+
+
+
+<div class="container-fluid">
+
+</div>
+<script>
+    $(document).ready(function () {
+        PrepararGrid();
+    });
+
+    function PrepararGrid() {
+        //clearsession();
+        var dataSource = $("#gridInventoryTransferLine").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
+    }
+</script>
+

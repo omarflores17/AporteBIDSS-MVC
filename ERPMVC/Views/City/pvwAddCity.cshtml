@@ -1,0 +1,235 @@
+﻿@model ERPMVC.DTO.CityDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+
+</script>
+
+
+
+<div id="ModalCity" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Ciudad</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCity" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveCity"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                       
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id Ciudad</label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CountryId" class="control-label">País</label>
+                                                    <kendo-dropdownlist name="CountryId"
+                                                                        for="@Model.CountryId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Pais"
+                                                                        datatextfield="Name"
+                                                                        datavaluefield="Id"
+                                                                        style="width: 100%;" onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Country")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="StateId" class="control-label">Departamento</label>
+                                                    <kendo-dropdownlist name="State_Id"
+                                                                        required
+                                                                        for="@Model.StateId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Departamento"
+                                                                        datatextfield="Name"
+                                                                        datavaluefield="Id"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "State")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Name" class=" control-label" style="width:100%">Nombre</label>
+                                                    <input type="text" asp-for="Name" name="Nombre" class="form-control" required autocomplete="off" style="width:100%" maxlength="50" onkeypress="return soloLetras(event)" onchange="PrevenirCambios()"/>
+                                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" autocomplete="off" style="width:100%" maxlength="200" onkeypress="return soloLetras(event)" onchange="PrevenirCambios()" />
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button id="btnCity" class="btn btn-success" type="button" onclick="SaveCity()"> Guardar </button>
+                                            <button type="button" class="btn btn-default" onclick="CerrarModal()">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var changes = false;
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+                //closeOnConfirm: true
+            }, function () {
+                $('#ModalCity').modal('hide');
+            });
+        } else {
+            $('#ModalCity').modal('hide');
+        }
+    }
+    function RefreshGrid() {
+
+        var grid = $("#grid").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+        function SaveCity(e) {
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnCity").hide();
+            $("#btnCity").prop("disabled", true);
+            var displayedData = $("#gridCity").data().kendoGrid.dataSource.view();
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'Name': $("#Name").val(),
+                'StateId': $("#StateId").val(),
+                'CountryId': $("#CountryId").val(),
+                'Description': $("#Description").val(),
+            };
+
+            console.log('DATAOBJECTS',dataObject);
+            var validator = $("#frmCity").data("kendoValidator");
+                 var status = $(".status");
+
+               
+            
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveCity", "City")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Ciudad", "Guardado Satisfactoriamente", "success");
+                            RefrescarGrid();
+
+
+
+                            $('#ModalCity').modal('hide');
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                    //Cierras tu ventana
+                                }
+                            }, false);
+                           
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log('VERIFICAR')
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    notification.show({
+                        title: "Validacion",
+                        message: "Datos invalidos en el formulario!"
+                    }, "error");
+                }
+          
+
+            $("#btnCity").show();
+            $("#btnCity").prop("disabled", false);
+        }
+</script>

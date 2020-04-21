@@ -1,0 +1,197 @@
+﻿@model ERPMVC.DTO.MotivosAjusteDTO
+@using Kendo.Mvc.UI
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+        {"required","Valor requerido" }
+    };
+
+}
+<script>
+    function customFunction(input) {
+        if (input.attr('name') === "Id" && input.val() === "0") {
+            return false;
+        }
+
+    }
+</script>
+
+<div id="ModalMotivosAjuste" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Motivos de Ajuste</h4>
+                <button type="button" class="close" onclick="CerrarModal()" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmMotivosAjuste" kendo-validator="true" kendo-message="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveMotivosAjuste"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id</label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-9">
+                                                <div class="form-group">
+                                                    <label asp-for="Descripcion" class=" control-label" style="width:100%">Descripción</label>
+                                                    <textarea type="text" asp-for="Descripcion" id="Descripcion" name="Descripcion"  class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" required data-required-msg="La Descripción es requerida."></textarea>
+                                                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Utlidad" class=" control-label" style="width:100%">Utlidad</label>
+                                                    <textarea type="text" asp-for="Utlidad" id="Utlidad" name="Utlidad" class="k-textbox" maxlength="300" autocomplete="off" style="width:100%" required data-required-msg="La Utlidad es requerida."></textarea>
+                                                    <span asp-validation-for="Utlidad" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="EstadoId" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="EstadoId"
+                                                                        for="@Model.EstadoId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        required data-required-msg="El Estado es requerido."
+                                                                        style=" width: 100%"
+                                                                        onchange="PrevenirCambios()">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="EstadoId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button id="btnMotivosAjuste" class="btn btn-success" type="button" onclick="SaveMotivosAjuste()"> Guardar </button>
+                                        <button type="button" class="btn btn-default" onclick="CerrarModal()">Cerrar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+     function Numeros(string) {
+        var out = '';
+        var filtro = 'abcdefghijklmnñopqrstuvwxyzáéíóúABCDEFGHIJKLMNÑOPQRSTUVWXYZ.-()%" ';
+        for (var i = 0; i < string.length; i++)
+            if (filtro.indexOf(string.charAt(i)) != -1)
+                out += string.charAt(i);
+        return out;
+    }
+    function pierdeFoco(e) {
+        var valor = e.value.replace(/^0*/, '');
+        e.value = valor;
+    }
+    var changes = false;
+    function PrevenirCambios() {
+        changes = true;
+    }
+    function CerrarModal() {
+        if (changes) {
+            swal({
+                title: "Cerrar",
+                text: "Los datos que aun no se han guardado del formulario se perderan ¿Desea Continuar? ",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Aceptar"
+            }, function () {
+                $('#ModalMotivosAjuste').modal('hide');
+            });
+        } else {
+            $('#ModalMotivosAjuste').modal('hide');
+        }
+    }
+
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+
+       function SaveMotivosAjuste(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+            $("#btnMotivosAjuste").hide();
+            $("#btnMotivosAjuste").prop("disabled", true);
+
+            var displayedData = $("#gridMotivosAjuste").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'Descripcion': $("#Descripcion").val(),
+                'Utlidad': $("#Utlidad").val(),
+                'EstadoId': $("#EstadoId").val(),
+                '_TipoGastos': displayedData,
+            };
+
+           debugger;
+            var validator = $("#frmMotivosAjuste").data("kendoValidator");
+                 var status = $(".status");
+
+            console.log('VERIFICAR',dataObject)
+                if (validator.validate()) {
+                    $.ajax({
+                        url: '@Url.Action("SaveMotivosAjuste", "MotivosAjuste")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            swal("Motivo de Ajuste", "Almacenado con éxito", "success");
+                            RefrescarGrid();
+
+                            $('#ModalMotivosAjuste').modal('hide');
+                            window.addEventListener("keyup", function (event) {
+                                var codigo = event.keyCode || event.which;
+                                if (codigo == 13) {
+                                }
+                            }, false);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            swal("Error", "Ya existe un Motivo de Ajuste con este nombre", "error");
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Datos invalidos en el formulario!")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnMotivosAjuste").show();
+            $("#btnMotivosAjuste").prop("disabled", false);
+    }
+</script>
+

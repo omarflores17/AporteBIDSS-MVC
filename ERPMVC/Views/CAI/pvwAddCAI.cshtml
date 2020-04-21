@@ -1,0 +1,212 @@
+﻿@model ERPMVC.DTO.CAIDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalCAI" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">CAI</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCAI" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveCAI"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="IdCAI" class=" control-label" style="width:100%">Id CAI</label>
+                                                    <input type="text" asp-for="IdCAI" name="CAI" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdCAI" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <div class="form-group">
+                                                    <label asp-for="_cai" class=" control-label" style="width:100%">CAI</label>
+
+                                                    <input type="text" asp-for="_cai" id="elcai" maxlength="40" required data-required-msg="El CAI es requerido." name="_cai" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="_cai" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaRecepcion" class=" control-label" style="width:100%">Fecha Recepción</label>
+                                                    @if (Model.IdCAI > 0)
+                                                    {
+                                                        <kendo-datetimepicker name="FechaRecepcion" style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss" onchange="setMinFechaLimiteEmision()"
+                                                                              data-val-required="La Fecha Recepción es requerida."
+                                                                              value="Model.FechaRecepcion"></kendo-datetimepicker>
+                                                    }
+                                                    else
+                                                    {
+                                                        <kendo-datetimepicker name="FechaRecepcion" style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss" min="@DateTime.Now" onchange="setMinFechaLimiteEmision()"
+                                                                              data-val-required="La Fecha Recepción es requerida."
+                                                                              value="Model.FechaRecepcion"></kendo-datetimepicker>
+                                                    }
+                                                    @*<input type="date" asp-for="FechaRecepcion" name="FechaRecepcion" class="form-control" autocomplete="off" style="width:100%" />*@
+                                                    <span asp-validation-for="FechaRecepcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaLimiteEmision" class=" control-label" style="width:100%">Fecha límite emisión</label>
+                                                    @if (Model.IdCAI > 0)
+                                                    {
+                                                        <kendo-datetimepicker name="FechaLimiteEmision" style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="La Fecha límite emisión es requerida."
+                                                                              min="@Model.FechaRecepcion"
+                                                                              value="Model.FechaLimiteEmision"></kendo-datetimepicker>
+                                                    }
+                                                    else
+                                                    {
+                                                        <kendo-datetimepicker name="FechaLimiteEmision" style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="La Fecha límite emisión es requerida."
+                                                                              value="null"></kendo-datetimepicker>
+                                                    }
+                                                    @*<input type="date" asp-for="FechaLimiteEmision" name="FechaLimiteEmision" class="form-control" autocomplete="off" style="width:100%" />*@
+                                                    <span asp-validation-for="FechaLimiteEmision" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado" data-val-required="El Estado es requerido."
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button id="btnCAI" class="btn btn-success" type="button" onclick="SaveCAI()">Guardar</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" name="close">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function SaveCAI(e) {
+    $("#btnCAI").hide();
+    $("#btnCAI").prop("disabled", true);
+
+    var displayedData = $("#gridCAI").data().kendoGrid.dataSource.view();
+
+    var dataObject = {  'IdCAI': $("#IdCAI").val()===""?"0":$("#IdCAI").val(),
+        'elcai': $("#elcai").val(),
+        'FechaRecepcion': $("#FechaRecepcion").getKendoDateTimePicker().value().toJSON(),
+        'FechaLimiteEmision': $("#FechaLimiteEmision").getKendoDateTimePicker().value().toJSON(),
+        'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+        'IdEstado': $("#IdEstado").val(),
+    };
+
+    var validator = $("#frmCAI").data("kendoValidator");
+            var status = $(".status");
+        if (validator.validate()) {
+
+            $.ajax({
+                url: '@Url.Action("SaveCAI", "CAI")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    swal("CAI", "Guardado Satisfactoriamente", "success");
+                    RefrescarGrid();
+
+                    $('#ModalCAI').modal('hide');
+                    window.addEventListener("keyup", function (event) {
+                        var codigo = event.keyCode || event.which;
+                        if (codigo == 13) {
+                        }
+                    }, false);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else {
+            swal("Validación", "Ingrese todos los datos en el formulario!", "info");
+        }
+    $("#btnCAI").show();
+    $("#btnCAI").prop("disabled", false);
+}
+
+    function setMinFechaLimiteEmision() {
+        var _fechaRecepcion = "";
+        var _fechaLimiteEmision = "";
+        if ($("#FechaRecepcion").getKendoDateTimePicker().value() != null || $("#FechaRecepcion").getKendoDateTimePicker().value() != undefined || $("#FechaRecepcion").val() != "") {
+            _fechaRecepcion = $("#FechaRecepcion").getKendoDateTimePicker().value().toJSON()
+
+            $("#FechaLimiteEmision").kendoDateTimePicker("min", _fechaRecepcion)
+
+            if ($("#FechaLimiteEmision").getKendoDateTimePicker().value() != null || $("#FechaLimiteEmision").getKendoDateTimePicker().value() != undefined || $("#FechaLimiteEmision").val() != "") {
+                _fechaLimiteEmision = $("#FechaLimiteEmision").getKendoDateTimePicker().value().toJSON()
+                if (_fechaRecepcion > _fechaLimiteEmision) {
+                    $("#FechaLimiteEmision").val(null);
+                }
+            }
+        }
+    }
+</script>

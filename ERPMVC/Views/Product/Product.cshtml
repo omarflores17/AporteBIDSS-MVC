@@ -1,0 +1,213 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Productos";
+
+}
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridProduct").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+     function Agregar() {
+
+         var dataObject = {
+             ProductId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Details", "Product")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+             success: function (result) {
+
+                $("#titulo").text("Nuevo Proveedor");
+                window.location.href = "@Url.Action("Details", "Product")";
+                 $('#ModalProduct').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 swal("Error", textStatus, "error");
+              }
+        });
+         
+     }
+
+
+         function EditProduct(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 ProductId: dataItem.ProductId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddProduct", "Product")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    //console.log('success', result)
+
+                    $("#numProduct").html('');
+                    $("#numProduct").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalProduct').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+
+
+     function Detalles(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Details", "Product")?ProductId=" + dataItem.ProductId;
+        }
+        @*function OnRequestEnd_TopLinePriceGrid(e) {
+            console.log(e.type);
+            if (e.type === "update" || e.type === "create") {
+                var grid = $('#gridProduct').data('kendoGrid');
+                grid.dataSource.read();
+            }
+        }*@
+
+
+
+
+     //funcion para eliminar
+    function Delete(e) {
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+               url: '@Url.Action("Delete", "Product")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridProduct").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    $("#titulo").text("Eliminar Producto");
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    swal(textStatus + ": " + XMLHttpRequest.responseText);
+
+                }
+            });
+        }
+    }
+
+</script>
+
+<h3 class="text-themecolor">Producto</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Product>
+                  ()
+
+                    .Name("gridProduct")
+
+                    .Columns(columns =>
+                    {
+                        columns.Command(command =>
+                        {
+
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("Detalles");
+                            command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+                        }).Width(180).Title("Acciones");
+            // columns.Bound(p => p.ProductId).Width(190);
+            columns.Bound(p => p.ProductCode).Width(150).Title("Código");
+                        columns.Bound(p => p.ProductName).Width(300).Title("Nombre");
+                        columns.Bound(p => p.DefaultBuyingPrice).Width(190).Title("Costo").Format("{0:C}");
+                        columns.Bound(p => p.DefaultSellingPrice).Width(190).Title("Precio").Format("{0:C}");
+            //columns.Bound(p => p.Currency.Description).Title("Moneda").Width(190);
+            //columns.Bound(p => p.Estado).Width(190);
+
+
+        })
+
+
+                .ToolBar(tools =>
+                {
+
+        //tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "Agregar();" });
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("ProductoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("ProductoReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.ProductId);
+                    model.Field(p => p.ProductId).Editable(false);
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get", "Product"))
+                .Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
+                .Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
+               .Destroy(destroy => destroy.Action("Delete", "Product").Type(HttpVerbs.Post))
+                )
+
+)
+
+<script>
+
+    //para los tools tips
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+
+</script>
+

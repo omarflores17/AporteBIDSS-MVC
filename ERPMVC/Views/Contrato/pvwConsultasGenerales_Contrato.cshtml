@@ -1,0 +1,134 @@
+﻿@model ERPMVC.Models.Contrato
+@{
+    //var Linea = ViewData["producto"] as IEnumerable<ERPMVC.Models.Product>;
+    var Linea = ViewData["Sucursal"] as IEnumerable<ERPMVC.Models.Branch>;
+}
+@*grid de contrato pagados y pendientes*@
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.Contrato>()
+                    .Name("gridContratoPendiente")
+                    .Columns(columns =>
+                    {
+                        //columns.ForeignKey(p => p.BranchId, (System.Collections.IEnumerable)ViewData["Sucursal"], "BranchId", "BranchName").Title("Sucursal").Width(120);
+                        columns.Bound(p => p.Fecha).Title("Fecha Contrato").Format("{0:dd/MM/yyyy}").Width(200);
+                        columns.Bound(p => p.ContratoId).Title("Número Contrato").Width(200);
+                        columns.Bound(p => p.ValorContado).Title("Valor Contado").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.ValorPrima).Title("Valor Prima").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.TotalContrato).Title("Saldo Contado").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.Plazo).Title("Plazo").Width(150);
+                        columns.Bound(p => p.ValorCuota).Title("Valor Cuota").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.SinFinaciar).Title("Sin Finaciar").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.SaldoCredito).Title("Saldo Crédito").Format("{0:n2}").Width(150);
+                        columns.Bound(p => p.Fecha_de_vencimiento).Title("Fecha Finalizacion").Format("{0:dd/MM/yyyy}").Width(200);
+                        columns.Bound(p => p.NombreEstado).Title("Estado").ClientGroupHeaderTemplate("Estado de Contrato: #=  kendo.toString(value) #").Hidden(true);
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+                
+
+            )
+            .ForNumber(n => n
+            .Clear()
+            .IsEqualTo("Es igual a")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsNull("Es nulo")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            )
+            .ForDate(d => d
+            .Clear()
+            .IsEqualTo("Es igual que")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            .IsNotEqualTo("No es igual que")
+            )
+        ))
+                    .ToolBar(tools =>
+                    {
+                        //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .AutoBind(true)
+                    .Pageable()
+                    .Events(e => e.DataBound("CalcularTotalDocumento"))
+                    .Filterable()
+                    .Scrollable()
+                    .ClientDetailTemplateId("GridContratoDetalle")
+                    .Pdf(pdf => pdf.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+
+                    dataSource
+                    //.Ajax()
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Events(events =>
+                    {
+                        events.Error("error_handler");
+
+                    })
+                .Read(read => read.Action("GetContratoPendientesAndPagados", "Contrato").Data("GetData"))
+                //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                )
+        )
+
+    </div>
+</div>
+
+<script>
+    function GetData(){
+        return {
+            CustomerId: $("#CustomerId").val()
+        }
+    }
+</script>
+
+<script id="GridContratoDetalle" type="text/kendo-tmpl">
+    @(Html.Kendo().Grid<ERPMVC.Models.Contrato_Detalle>()
+                            .Name("grid_#=ContratoId#")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(o => o.Contrato_detalleId).Title("Id Detalle").Width(80);
+                                columns.Bound(o => o.Product.ProductName).Title("Producto").Width(200);
+                                columns.Bound(o => o.Cantidad).Format("{0:n2}").Title("Cantidad").Width(120);
+                                columns.Bound(o => o.Precio).Title("Precio").Width(120);
+                                columns.Bound(o => o.Monto).Format("{0:n2}").Title("Monto").Width(150);
+                                columns.Bound(o => o.Tax).Format("{0:n2}%").Title("Procentaje Impuesto").Width(150);
+                            })
+                            .DataSource(dataSource => dataSource
+                                .WebApi()
+                                .PageSize(10)
+                                .Read(read => read.Action("GetContratoDetaleByContratoId", "Contrato_Detalle", new { ContratoId = "#=ContratoId#" }))
+                                )
+
+                            .Pageable(s => s
+                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                            .Empty("No hay datos.")))
+                            .Sortable()
+                            .ToClientTemplate())
+
+</script>
+@*grid de contrato pagado*@
+

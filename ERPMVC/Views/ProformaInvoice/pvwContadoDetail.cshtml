@@ -1,0 +1,334 @@
+﻿@model ERPMVC.Models.ProformaInvoiceLine
+@{
+    var Linea = ViewData["producto"] as IEnumerable<ERPMVC.Models.Product>;
+}
+<style>
+    #gridCotizacionesDetail .k-grid-content {
+        min-height: 400px;
+        max-height: 500px;
+    }
+</style>
+
+<script>
+    //Setear valores
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+    //solo acepte numeros
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+        }
+
+            //para cargar campos dependientes de producto
+  function SetProductName(e) {
+
+        if ($("#ProductId").val() > 0) {
+            debugger;
+
+            var numerictextbox = $("#Quantity").data("kendoNumericTextBox");
+            numerictextbox.focus();
+
+            $("#ProductName").val($("#ProductId").data("kendoDropDownList").text());
+            var dataObject = { ProductId: $("#ProductId").val()};
+                $.ajax({
+                url: '@Url.Action("GetProductById", "Product")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    $("#DescriptionDetail").val(result.Description);
+                    $("#Price").val(result.DefaultSellingPrice);
+                    $("#DiscountPercentage").val(result.PorcentajeDescuento);
+                    $("#descuentoproducto").val(result.PorcentajeDescuento);
+                    debugger;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+                });
+
+        }
+        else
+        {
+           $("#SalesOrderName").prop('disabled', false);
+        }
+
+        debugger
+        document.getElementById("Quantity").select();
+
+
+
+
+                if ($("#ProductId").val() == 0) {
+                    $("#Existencia").val(0);
+        }
+        else {
+            $.ajax({
+            type: "POST",
+            url: "@Url.Action("VerSaldo", "KardexViale")",
+            data: $("#ProductId").val(),
+            contentType: "application/json; charset=utf-8",
+         dataType: "json",
+            success: function (data) {
+                console.log(data);
+                    $("#Existencia").val(data);
+                },
+            error: function (req, status, error) {
+                alert(error);
+            }
+        });
+            }
+    }
+
+    //get para agregar un registro al grid
+    function GetContadoDetalle() {
+        //closesaleorderline();
+        var subproductname = '', unidaddemedida = '';
+        if ($("#ProductId") != null) {
+            if ($("#ProductId").data("kendoDropDownList") != null) {
+                subproductname = $("#ProductId").data("kendoDropDownList").text();
+            }
+        }
+
+        var displayedData = $("#gridContadoDetail").data().kendoGrid.dataSource.data();
+        var id = -999999;
+         debugger;
+        if (Number($("#ProformaLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].Id > id)
+                        id = displayedData[i].Id;
+                }
+
+                id = id + 1;
+            }
+            else if ($("#ProductId").val()>0) {
+                id = 1;
+            }
+
+        }
+        else {
+            id = $("#ProformaLineId").val(0);
+
+        }
+        return {
+             ProformaLineId: id,
+            ProformaInvoiceId: @Model.ProformaInvoiceId,
+            ProductId: $("#ProductId").val(),
+             Quantity: $("#Quantity").val(),
+            Price: $("#Price").val(),
+            DiscountPercentage: $("#DiscountPercentage").val(),
+            SubTotal: $("#SubTotalLine").val(),
+            Total: $("#TotalLine").val(),
+
+            }
+    }
+    //metodo que levanta el boton agregar
+        function AddContadoDetalle(e) {
+         var cant = $("#Quantity").val();
+        var exis = $("#Existencia").val();
+        if ($("#Quantity").val() == 0) {
+            swal("Error", "La Cantidad no puede ser 0.");
+        }else if  (parseInt(exis) < parseInt(cant)) {
+            swal("Error", "Existencias insuficientes.");
+        }else if ($("#ProductId").val() == 0 ) {
+            swal("Error", "seleccione todos los campos");
+        } else if ($("#ProductId").val() > 0) {
+            try {
+                RefreshCotizacionesDetail();
+                $("#Quantity").val(0);
+            } catch (e) {
+                $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            }
+        }
+    }
+
+    //agrega y refresca en el grid
+    function RefreshCotizacionesDetail() {
+        debugger;
+        var grid = $("#gridContadoDetail").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+        $("#ProductId").data("kendoDropDownList").value(0);
+         $("#Quantity").data("kendoNumericTextBox").value('0');
+         $("#Price").val(0);
+        $("#DiscountPercentage").val('0');
+         $("#Existencia").val(0);
+    }
+    //recargar la pantalla y limpia la variable de sesion
+    $(document).ready(function () {
+        clearsession()
+    });
+
+    //metodo para eliminar
+    function Delete(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+                url: '@Url.Action("Delete", "ProformaInvoiceLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#gridContadoDetail").data("kendoGrid");
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    swal("Error", textStatus, "error");
+                }
+            });
+
+        }
+    }
+</script>
+
+@{
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                            {"required","Valor requerido" }
+                                         };
+    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+}
+
+<div class="card card-outline-inverse">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+
+                        <form id="frmcotizar" kendo-validator="true"
+                              method="post" class="validation-wizard wizard-circle">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="row" id="div1">
+                                     
+                                    </div>
+                                    <div>
+                                        <button id="btnActualizarContadoDetalle" type="submit" class="btn btn-success float-right" onclick="AddContadoDetalle()">Añadir producto</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoiceLine>()
+                        .Name("gridContatoDetail")
+                        .Columns(columns =>
+                        {
+                            columns.Command(command =>
+                            {
+                                command.Custom("Eliminar").Click("Delete").IconClass("fa fa-trash").Text(" ");
+
+                            }).Width(100).Title("Acciones");
+
+                            columns.Bound(p => p.ProformaInvoiceId).Title("Id Linea").Width(150).Visible(false);
+                            columns.Bound(p => p.ProformaLineId).Title("Cotización Id").Width(150).Visible(false);
+                            //columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                            columns.ForeignKey(p => p.ProductId, (System.Collections.IEnumerable)ViewData["producto"], "ProductId", "ProductName").Title("Nombre").Width(150);
+                            columns.ForeignKey(p => p.ProductId, (System.Collections.IEnumerable)ViewData["producto"], "ProductId", "ProductCode").Title("Codigo").Width(150);
+                            columns.Bound(p => p.Quantity).Title("Cantidad").Width(150);
+                            columns.Bound(p => p.Price).Title("Precio").Width(150).Format("{0:C}");
+                           
+                            
+                            columns.Bound(p => p.DiscountAmount).Title("Descuentos").Width(150).Visible(false);
+                            
+                            
+                            columns.Bound(p => p.Total).Title("Total").Width(150).Visible(true).Format("{0:C}");
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                    .Clear()
+                    .Contains("Contiene")
+                    .DoesNotContain("No contiene")
+                    .EndsWith("Termina con")
+                    .IsEqualTo("Es igual a")
+                    .IsNotEqualTo("No es igual a")
+                    .IsNull("Es nulo")
+                    .StartsWith("Inicia con")
+
+
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+            ))
+                        .ToolBar(tools =>
+                        {
+                            //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .AutoBind(true)
+                        .Pageable()
+                        .Events(e => e.DataBound("CalcularTotalDocumento"))
+                        .Filterable()
+                        .Scrollable()
+                        // .ClientDetailTemplateId("template")
+                        .Pdf(pdf => pdf.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ContratoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        //.Events(e=>e.Save("onsave"))
+                        .DataSource(dataSource =>
+
+                        dataSource
+                        //.Ajax()
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.ProformaLineId);
+                            model.Field(p => p.ProformaLineId).Editable(false);
+                            model.Field(p => p.ProformaLineId).Editable(false);
+
+                        })
+                        .Events(events =>
+                        {
+                            events.Error("error_handler");
+
+                        })
+                    .Read(read => read.Action("GetContratoDetalle", "Contrato_Detalle").Data("GetContratoDetalle"))
+                    //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                    //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                    )
+        )
+
+    </div>
+</div>

@@ -1,0 +1,93 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Kardex";
+}
+
+<script> 
+    function RefrescarGrid() {
+        var grid = $("#gridKardex").getKendoGrid();
+        grid.dataSource.read();
+    }  
+</script>
+
+<h3 class="text-themecolor">Movimientos de kardex</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.KardexViale>
+        ()
+
+                        .Name("gridKardex")
+
+                        .Columns(columns =>
+                        {
+                            columns.Bound(p => p.Id).Title("No.").Width(140);
+                            columns.Bound(p => p.ProductName).Title("Producto").Width(200);
+                            columns.Bound(p => p.SaldoAnterior).Title("Saldo Anterior").Width(50);
+                            columns.Bound(p => p.QuantityEntry).Title("Cantidad entra").Width(50);
+                            columns.Bound(p => p.QuantityOut).Title("Cantidad sale").Width(50);
+                            columns.Bound(p => p.Total).Title("Total").Width(50);
+                            columns.Bound(p => p.KardexDate).Title("Fecha").Width(100);
+                            columns.Bound(p => p.TypeOperationName).Title("Operacion").Width(100);
+                        })
+                        .ToolBar(tools =>
+                        {
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("Kardex" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("Kardex" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "KardexViale"))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+    )
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipoGastos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipoGastos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+
+
+

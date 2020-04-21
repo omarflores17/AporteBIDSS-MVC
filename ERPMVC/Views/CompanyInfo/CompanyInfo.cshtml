@@ -1,0 +1,50 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Información de la Empresa";
+}
+
+<script>    
+      function AddCompanyInfo() {
+          $('#ModalCompanyInfo').find(':input').not(':submit').val('');
+
+          $('#ModalCompanyInfo').modal('show');
+          $("#CompanyInfoId").val('0');
+      }
+
+
+         function EditCompanyInfo() {
+            
+            var dataObject = {
+                CompanyInfoId: 2,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddCompanyInfo", "CompanyInfo")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumCompanyInfo").html('');
+                    $("#NumCompanyInfo").html(result);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+    $(document).ready(function () {
+        EditCompanyInfo();
+    });
+         
+
+</script>
+
+
+
+<div id="NumCompanyInfo">
+    @await Html.PartialAsync("pvwAddCompanyInfo", new ERPMVC.DTO.CompanyInfoDTO { CompanyInfoId = 2 })
+</div>

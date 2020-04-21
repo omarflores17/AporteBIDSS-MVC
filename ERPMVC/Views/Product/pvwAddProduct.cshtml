@@ -1,0 +1,476 @@
+﻿@model ERPMVC.Models.Product
+@addTagHelper *, Kendo.Mvc
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+{"required","Requerido" }
+};
+
+}
+
+<script>
+
+     $(document).ready(function () {
+       debugger;
+        console.log("1");
+        if ($("#ProductId").val() == 0) {
+             document.getElementById('Cantidad').style.display = 'none';
+        }
+        else {
+            $.ajax({
+            type: "POST",
+            url: "@Url.Action("VerSaldo", "KardexViale")",
+            data: $("#ProductId").val(),
+            contentType: "application/json; charset=utf-8",
+         dataType: "json",
+            success: function (data) {
+                console.log(data);
+                    $("#Existencia").val(data);
+                },
+            error: function (req, status, error) {
+                alert(error);
+            }
+        });
+        }
+    });
+    
+    function GetProductId() {
+        return { ProductId: $("#ProductId").val() }
+    }
+     function BackVendor() {
+        window.location.href = "@Url.Action("Product", "Product")";
+    }
+    $(document).ready(function () {
+        debugger;
+        if ($('#FlagConsignacion').is(':checked')) {            $('#motos').show();            $("#Serie").attr('required', '');    //turns required on            $("#Modelo").attr('required', '');    //turns required on            $("#SerieMotor").attr('required', '');    //turns required on            $("#SerieChasis").attr('required', '');    //turns required on        }        else {            $('#motos').hide();            $('#peri').hide();            $("#ComisionId").removeAttr('required');            $("#PeriodicidadId").removeAttr('required');            $("#ComisionId").removeAttr('data-val-required');            $("#PeriodicidadId").removeAttr('data-val-required');        }
+
+    });
+    function onChange(e) {
+        debugger;
+        console.log(e.checked);//true of false
+        if (e.checked) {
+            console.log(Regalia);
+            $("#Serie").attr('required', '');    //turns required on            $("#Modelo").attr('required', '');    //turns required on            $("#SerieMotor").attr('required', '');    //turns required on            $("#SerieChasis").attr('required', '');    //turns required on            $('#motos').show();
+            $('#Regalia').val(1);
+
+        }
+        else {            $("#Serie").removeAttr('required');            $("#SerieMotor").removeAttr('required');            $("#SerieChasis").removeAttr('required');            $("#Modelo").removeAttr('required');            $("#Serie").removeAttr('data-val-required');            $("#Modelo").removeAttr('data-val-required');            $("#SerieMotor").removeAttr('data-val-required');            $("#SerieChasis").removeAttr('data-val-required');            $('#motos').hide();
+
+            $('#Serie').val('');
+            $('#SerieMotor').val('');
+            $('#SerieChasis').val('');
+            $('#Modelo').val('');
+            $('#Regalia').val(0);
+
+        }
+    }
+  
+</script>
+<body onload="Cantidad()">
+<div class="mt-3 m-l-5">
+    <div class="row">
+        <form id="frmProduct" kendo-validator="true" kendo-messages="messages" onsubmit="return false"
+              data-ajax="true"
+              data-ajax-method="post"
+              data-ajax-begin="SaveProduct"
+              class="validation-wizard wizard-circle">
+            <div class="modal-body">
+
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label">Línea</label>
+                                <kendo-dropdownlist name="LineaId"
+                                                    for="@Model.LineaId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar Linea"
+                                                    datatextfield="Descripcion"
+                                                    datavaluefield="LineaId"
+                                                    required data-required-msg="La linea es requerido"
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetLineas", "Lineas")" />
+                                        </transport>
+                                    </datasource>
+                                    <popup-animation>
+                                        <open duration="500" />
+                                        <close duration="500" />
+                                    </popup-animation>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="LineaId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" hidden>
+                            <div class="form-group">
+                                <label asp-for="BranchId" class="control-label">Sucursal</label>
+                                <kendo-dropdownlist name="IdBranch"
+                                                    for="@Model.BranchId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    datatextfield="BranchName"
+                                                    datavaluefield="BranchId"
+                                                    required data-required-msg="La sucursal es requerido"
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetBranch", "Branch")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="BranchId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label">Grupo</label>
+                                <kendo-dropdownlist name="GrupoId"
+                                                    for="@Model.GrupoId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar Grupo"
+                                                    datatextfield="Description"
+                                                    datavaluefield="GrupoId"
+                                                    required data-required-msg="El grupo es requerido"
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetGrupo", "Grupos")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="GrupoId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Correlative" class=" control-label" style="width:100%">Correlativo</label>
+                                <input type="text" asp-for="Correlative" name="Correlative" class="form-control" maxlength="15" style="width:100%" required data-required-msg="El correlativo es requerido" onKeyPress="return soloNumeros(event)"  />
+                                <span asp-validation-for="Correlative" class="text-danger"></span>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" hidden>
+                            <div class="form-group">
+                                <label asp-for="ProductId" class=" control-label" style="width:100%">Id Producto</label>
+                                <input type="text" asp-for="ProductId" name="IdProduct" class="form-control" disabled="disabled" data-required-msg="El producto es requerido" style="width:100%" />
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="ProductCode" class=" control-label" style="width:100%">Código Producto</label>
+                                <input type="text" asp-for="ProductCode" name="ProductCode" id="ProductCode"  class="form-control" readonly autocomplete="off" style="width:100%" onchange="ValidarProducto();" />
+                                <span asp-validation-for="ProductCode" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Barcode" class=" control-label" style="width:100%">Código de barra</label>
+                                <input type="text" asp-for="Barcode" disabled name="Barcode" class="form-control" autocomplete="off" style="width:100%" required onchange="PrevenirCambios()" />
+                                <span asp-validation-for="Barcode" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="Cantidad">
+                            <div class="form-group">
+                                <label class=" control-label" style="width:100%">Existencia de producto</label>
+                                <input type="text" id="Existencia" class="form-control" maxlength="15" style="width:100%" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label">Marca</label>
+                                <kendo-dropdownlist name="MarcaId"
+                                                    for="@Model.MarcaId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar Marca"
+                                                    datatextfield="Description"
+                                                    datavaluefield="MarcaId"
+                                                    required data-required-msg="La marca es requerido"
+                                                    style="width: 100%;" onchange="PrevenirCambios()">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetMarca", "Marcas")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="MarcaId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="ProductName" class=" control-label" style="width:100%">Nombre Producto</label>
+                                <input type="text" asp-for="ProductName" name="ProductName" required data-required-msg="El nombre del producto es requerido" class="form-control" maxlength="50" style="width:100%" onchange="PrevenirCambios()" />
+                                <span asp-validation-for="ProductName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                <textarea onkeypress="PrevenirCambios()" onkeyup="this.value=Numeros(this.value)" type="text" required data-required-msg="La descripción es requerido" asp-for="Description" maxlength="150" name="Description" class="form-control" rows="4" cols="40" autocomplete="off" style="width:100%"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="FundingInterestRateId" class="control-label"> Tasa de Interés</label>
+                                <kendo-dropdownlist name="FundingInterestRateId"
+                                                    for="@Model.FundingInterestRateId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar interés"
+                                                    datatextfield="Descripcion"
+                                                    datavaluefield="Id"
+                                                    required data-required-msg="La tasa de interés es requerido"
+                                                    style="width: 100%;" onchange="PrevenirCambios()">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("Get", "FundingInterestRate")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="FundingInterestRateId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="Prima" class="control-label" style="width:100%">Prima%</label>
+                                <kendo-numerictextbox name="Prima"
+                                                      format="#.## '%'"
+                                                      min="0"
+                                                      max="100"
+                                                      decimals="2"
+                                                      maxlength="5"
+                                                      required data-required-msg="La prima es requerida."
+                                                      style="width:100%" />
+                                <span asp-validation-for="Prima" class="text-danger"></span>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="DefaultBuyingPrice" class="control-label" style="width:100%">Costo</label>
+                                <kendo-numerictextbox name="DefaultBuyingPrice"
+                                                      format="n2"
+                                                      min="0"
+                                                      step="1"
+                                                      id="DefaultBuyingPrice"
+                                                      maxlength="20"
+                                                      required data-required-msg="El costo es requerido" validationMessage="El costo no puede ir vacio"
+                                                      onclick="PrevenirCambios()"
+                                                      style="width:100%"
+                                                      value="Model.DefaultBuyingPrice" />
+                                <span asp-validation-for="DefaultBuyingPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="DefaultSellingPrice" class="control-label" style="width:100%"> Precio de venta</label>
+                                <kendo-numerictextbox name="DefaultSellingPrice"
+                                                      format="n2"
+                                                      min="0"
+                                                      step="1"
+                                                      id="DefaultSellingPrice"
+                                                      maxlength="20"
+                                                      required data-required-msg="El precio de venta es requerido" validationMessage="El precio de venta no puede ir vacio"
+                                                      onclick="PrevenirCambios()"
+                                                      style="width:100%"
+                                                      value="Model.DefaultSellingPrice" />
+                                <span asp-validation-for="DefaultSellingPrice" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="TaxId" class="control-label">Impuesto</label>
+                                <kendo-dropdownlist name="TaxId"
+                                                    for="@Model.TaxId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar Impuesto"
+                                                    datatextfield="Description"
+                                                    datavaluefield="TaxId"
+                                                    required data-required-msg="El impuesto es requerido"
+                                                    style="width: 100%;" onchange="PrevenirCambios()">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("Get", "Tax")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="TaxId" class="text-danger"></span>
+
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="PorcentajeDescuento" class="control-label" style="width:100%">Porcentaje de descuento</label>
+                                <kendo-numerictextbox name="PorcentajeDescuento"
+                                                      format="#.## '%'"
+                                                      min="0"
+                                                      max="100"
+                                                      decimals="2"
+                                                      maxlength="5"
+                                                      required data-required-msg="El Porcentaje de descuento es requerido."
+                                                      style="width:100%" />
+                                <span asp-validation-for="PorcentajeDescuento" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class=" col-md-3">
+                            <div class="form-group">
+                                <label asp-for="Regalia" class="control-label" style="width: 100%;">¿Regalia?</label>
+                                @(Html.Kendo().CheckBoxFor(m => m.Regalia)
+                                                              .Name("Regalia")
+                                                              )
+
+                                
+                                <input type="checkbox" id="chbAll" value="Uncheck" class="k-checkbox" onchange="chbAllCheck()" />
+                            </div>
+                        </div>
+                       
+                        <div class=" col-md-3">
+                            <div class="form-group">
+                                <label asp-for="FlagConsignacion" class="control-label" style="width: 100%;">¿Producto en consignación?</label>
+                                @(Html.Kendo().SwitchFor(m => m.FlagConsignacion)
+                                                        .Name("FlagConsignacion").Messages(c => c.Checked("SI").Unchecked("NO"))
+                                                        .Events(ev => ev.Change("onChange"))
+                                )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="motos">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="Serie" class=" control-label" style="width:100%">Serie</label>
+                                <input type="text" asp-for="Serie" id="Serie"  data-required-msg="La serie es requerido" name="Serie" maxlength="40" class="form-control" autocomplete="off" style="width:100%">
+                                <span asp-validation-for="Serie" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="Modelo" class=" control-label" style="width:100%">Modelo</label>
+                                <input type="text" asp-for="Modelo" id="Modelo"  data-required-msg="El modelo es requerido" name="Modelo" maxlength="40" class="form-control" autocomplete="off" style="width:100%">
+                                <span asp-validation-for="Modelo" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="SerieChasis" class=" control-label" style="width:100%">Serie Chasis</label>
+                                <input type="text" asp-for="SerieChasis" id="SerieChasis"  data-required-msg="La serie chasis es requerido" name="SerieChasis" maxlength="40" class="form-control" autocomplete="off" style="width:100%">
+                                <span asp-validation-for="SerieChasis" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="SerieMotor" class=" control-label" style="width:100%">Serie Motor</label>
+                                <input type="text" asp-for="SerieMotor" id="SerieMotor"  data-required-msg="La serie motor es requerido" name="SerieMotor" maxlength="40" class="form-control" autocomplete="off" style="width:100%">
+                                <span asp-validation-for="SerieMotor" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnProducto" class="btn btn-success" type="submit" onclick="SaveProduct(this)"> Guardar </button>
+                <a asp-action="Product" class="btn btn-secondary">Cerrar</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script>
+    var changes = false
+
+    $("#Correlative").change(function () {
+        debugger;
+        var GrupoId = $("#GrupoId").val();
+        var LineaId = $("#LineaId").val();
+        var Correlative = $("#Correlative").val();
+
+        if (LineaId == "" || GrupoId == "" || Correlative == "") {
+
+        }
+        else {
+
+            if (LineaId.length == 1) {
+                LineaId = "0" + LineaId;
+            }
+            if (GrupoId.length == 1) {
+                GrupoId = "0" + GrupoId;
+            }
+            console.log(LineaId + GrupoId + Correlative)
+            $("#ProductCode").val(LineaId + GrupoId + Correlative);
+            ValidarProducto();
+        }
+    });
+
+  function ValidarProducto() {
+      debugger;
+      var Codigo = $("#ProductCode").val();
+      var Id = $("#ProductId").val();
+
+        
+      var dataObject = {
+          ProductId: Id,
+          ProductCode: Codigo
+      };
+      console.log("Codigo", Codigo);
+        $.ajax({
+            url: '@Url.Action("ValidarCodigoProducto", "Product")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: dataObject,
+            success: function (dataObject) {
+
+                Id = dataObject.ProductId;
+                window.location.href = '@Url.Action("Details", "Product")?ProductId=' + Id;
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function PrevenirCambios() {
+        changes = true;
+
+    }
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+
+
+    function Numeros(string) {//solo letras y numeros
+        var out = '';
+        //Se añaden las letras validas
+        var filtro = 'abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZáéíóú.-()" ';//Caracteres validos
+
+        for (var i = 0; i < string.length; i++)
+            if (filtro.indexOf(string.charAt(i)) != -1)
+                out += string.charAt(i);
+        return out;
+    }
+
+</script>
+
