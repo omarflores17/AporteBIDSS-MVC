@@ -79,10 +79,6 @@ namespace ERPMVC.Controllers
         {
             return PartialView(Producto);
         }
-        public ActionResult ListVendor(Vendor vendor)
-        {
-            return PartialView(vendor);
-        }
      
         [HttpGet("[action]")]
         public async Task<ActionResult> GetProductById(Int64 ProductId)
@@ -483,34 +479,6 @@ namespace ERPMVC.Controllers
         //    return PartialView(_vendor);
         //}
 
-        [HttpGet("[action]")]
-        public async Task<ActionResult> GetProductVendorsByProductId([DataSourceRequest]DataSourceRequest request, int ProductId)
-        {
-            List<Vendor> _products = new List<Vendor>();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Product/GetProductVendorsByProductID/" + ProductId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _products = JsonConvert.DeserializeObject<List<Vendor>>(valorrespuesta);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            //return Json(_customers.ToDataSourceResult(request));
-
-            return Json(_products.ToDataSourceResult(request));
-        }
 
 
 

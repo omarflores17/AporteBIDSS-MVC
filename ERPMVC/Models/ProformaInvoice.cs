@@ -123,6 +123,5 @@ namespace ERPMVC.Models
         public string Impreso { get; set; }
 
         public List<ProformaInvoiceLine> ProformaInvoiceLine { get; set; } = new List<ProformaInvoiceLine>();
-        public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }
     }
 }

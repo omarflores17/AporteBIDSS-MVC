@@ -99,8 +99,6 @@ namespace ERPMVC.Models
         public virtual Currency Currency { get; set; }
 
         public virtual Branch Branch { get; set; }
-       // public virtual VendorProduct VendorProduct { get; set; }
-        public virtual Vendor Vendor { get; set; }
         public string Correlative { get; set; }
       
     }

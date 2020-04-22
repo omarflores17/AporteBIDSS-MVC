@@ -24,7 +24,7 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public DashBoardController(ILogger<ConditionsController> logger, IOptions<MyConfig> config)
+        public DashBoardController(ILogger<DashBoardController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;

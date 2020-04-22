@@ -308,7 +308,7 @@ namespace ERPMVC.Controllers
             //return Ok(_Contrato);
         }
 
-        public async Task<ActionResult<Contrato>> Update(Int64 id, InventoryTransfer _Contrato)
+        public async Task<ActionResult<InventoryTransfer>> Update(Int64 id, InventoryTransfer _Contrato)
         {
             try
             {

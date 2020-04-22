@@ -39,23 +39,21 @@
 
   <ItemGroup>
     <Compile Remove="Templates\**" />
+    <Compile Remove="Views\CenterCoste\**" />
     <Compile Remove="Views\UnitOfMeasure\EditorTemplates\**" />
     <Content Remove="Templates\**" />
+    <Content Remove="Views\CenterCoste\**" />
     <Content Remove="Views\UnitOfMeasure\EditorTemplates\**" />
     <EmbeddedResource Remove="Templates\**" />
+    <EmbeddedResource Remove="Views\CenterCoste\**" />
     <EmbeddedResource Remove="Views\UnitOfMeasure\EditorTemplates\**" />
     <None Remove="Templates\**" />
+    <None Remove="Views\CenterCoste\**" />
     <None Remove="Views\UnitOfMeasure\EditorTemplates\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Accounting\pvwAddAccounting.cshtml" />
-    <Content Remove="Views\Dimensions\Dimension.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Views\Dashboard\" />
-    <Folder Include="Views\CenterCoste\" />
     <Folder Include="wwwroot\css\kendo\2019.1.220\Material\" />
     <Folder Include="wwwroot\images\emp\" />
     <Folder Include="wwwroot\js\kendo\2019.1.220\" />
@@ -63,16 +61,11 @@
 
   <ItemGroup>
     <None Include="Views\City\City.cshtml" />
-    <None Include="Views\BoletaDeSalida\pvwAddCity.cshtml" />
-    <None Include="Views\CustomerOfCustomer\CustomersOfCustomer.cshtml" />
     <None Include="Views\Customer\Details.cshtml" />
     <None Include="Views\Customer\Index.cshtml" />
 
     <None Include="Views\FundingInterestRate\Index.cshtml" />
     <None Include="Views\FundingInterestRate\pvwAddFundingInterestRate.cshtml" />
-
-    <None Include="Views\FixedAssetGroup\FixedAssetGroup.cshtml" />
-    <None Include="Views\FixedAssetGroup\pvwAddFixedAssetGroup.cshtml" />
     <None Include="Views\Product\Details.cshtml" />
     <None Include="Views\Product\ListVendor.cshtml" />
     <None Include="Views\Product\Product.cshtml" />
@@ -81,14 +74,8 @@
     <None Include="Views\PurchaseOrder\Details.cshtml" />
     <None Include="Views\PurchaseOrder\Index.cshtml" />
     <None Include="Views\PurchaseOrder\pvwPurchaseOrderDetail.cshtml" />
-    <None Include="Views\SalesOrder\pvwSalesOrder.cshtml" />
     <None Include="Views\State\pvwAddState.cshtml" />
     <None Include="Views\State\State.cshtml" />
-    <None Include="Views\Vendor\Details.cshtml" />
-    <None Include="Views\Vendor\Index.cshtml" />
-    <None Include="Views\Vendor\Proveedores.cshtml" />
-    <None Include="Views\Vendor\pvwAddVendor.cshtml" />
-    <None Include="Views\Vendor\Vendor.cshtml" />
     <None Include="wwwroot\admp\assets\images\background\Thumbs.db" />
     <None Include="wwwroot\admp\assets\images\big\Thumbs.db" />
     <None Include="wwwroot\admp\assets\images\icon\danger.svg" />

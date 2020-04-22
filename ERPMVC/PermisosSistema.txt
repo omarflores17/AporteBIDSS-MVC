@@ -1,44 +1,127 @@
+Menu
+Menu.Administracion
+Menu.Configuracion
+Menu.Seguridad
+Menu.Bancos
+Menu.Contabilidad
+Menu.Monitoreo
+Menu.Inventarios
+Menu.Clientes
+Menu.Compras
+Menu.Ventas
+Menu.Recursos Humanos
+Menu.Proveedores
+Menu.Reportes
 Administracion
-Administracion.Informacion de la Empresa
-Administracion.Parametros
-Administracion.Parametros.Sucursales
-Administracion.Parametros.Lineas
-Administracion.Parametros.Grupos
-Administracion.Parametros.Marcas
-Administracion.Parametros.Puesto
-Administracion.Parametros.Ciudades
-Administracion.Parametros.Departamentos
-Administracion.Parametros.Impuestos
-Administracion.Parametros.Configuracion Intereses
-Administracion.Parametros.Tasa de Interes
-Administracion.Parametros.Reglas de Mora
-Administracion.Parametros.CAI
-Administracion.Parametros.Puntos Emision
-Administracion.Parametros.Tipos de Documentos
-Administracion.Parametros.Numeracion SAR
+Administracion.Estados
+Administracion.Unidades de Medida
+Administracion.Sucursales
+Administracion.CAI
+Administracion.Puntos Emision
+Administracion.Tipos de Documentos
+Administracion.Numeracion SAR
+Administracion.Moneda
+Administracion.Tipo de Cliente
+Configuracion
+Configuracion.Elemento Configuracion
+Configuracion.Grupo Configuracion
+Configuracion.Pais
+Configuracion.Estado
+Configuracion.Ciudad
+Configuracion.Tipo de Contrato
+Configuracion.Escala
+Configuracion.Informacion de la Empresa
+Configuracion.Impuestos
+Configuracion.Tasa de Cambio
+Catalogos
+Catalogos.Servicios
+Catalogos.SubServicios
+Catalogos.Tipo de Producto
+Catalogos.Productos de Cliente
+Catalogos.Relacion Servicio
+Bancos
+Bancos.Bancos
+Bancos.Cuentas Bancarias
+Bancos.Cheques
+Bancos.Conciliacion Bancaria
+Contabilidad
+Contabilidad.Activos
+Contabilidad.Activos.Grupo de Activos
+Contabilidad.Activos.Activos Fijos
+Contabilidad.Cuentas
+Contabilidad.Cuentas.Catalogo de Cuentas
+Contabilidad.Cuentas.Tipos de Cuentas
+Contabilidad.Cuentas.Cuenta de Gastos de Ingreso
+Contabilidad.Movimientos
+Contabilidad.Movimientos.Configuracion de Asientos
+Contabilidad.Movimientos.Asiento Contable
+Contabilidad.Movimientos.Ajustes Contables
+Contabilidad.Seguros
+Contabilidad.Seguros.Aseguradoras
+Contabilidad.Seguros.Polizas
+Contabilidad.Seguros.Seguros de Almacafe
+Contabilidad.Seguros.Seguros del Cliente
+Contabilidad.Seguros.Reporte Valores Fisicos
+Contabilidad.Procesos
+Contabilidad.Procesos.Cierre Contable Manual
+Contabilidad.Reportes
+Contabilidad.Tipos de Documentos
+Contabilidad.Centros de Costos
+Contabilidad.Balanza de Comprobacion
+Contabilidad.Balance General
+Contabilidad.Estado de Resultado
+Monitoreo
+Monitoreo.Alertas
+Monitoreo.Informacion Mediatica
+Monitoreo.Definicion de Severidad
+Monitoreo.PEPS
+Monitoreo.Productos Prohibidos
+Monitoreo.Paises GAFI
 Inventarios
-Inventarios.Productos
-Inventarios.Productos.Productos
-Inventarios.Productos.Tipos de Producto
-Inventarios.Transferencia de Inventario
-Inventarios.Transferencia de Inventario.Entradas
-Inventarios.Transferencia de Inventario.Salidas
-Inventarios.Ordenes de Compra
+Inventarios.Control de Ingresos
+Inventarios.Recibo de Mercaderia
 Inventarios.Kardex
-Inventarios.Ajuste de Kardex
+Inventarios.Solicitud Certificado Deposito
+Inventarios.Autorizacion
+Inventarios.Control de Salida
+Inventarios.Entrega de Mercaderia
+Inventarios.Boleta de Salida
+Inventarios.Endosos
 Clientes
-Clientes.Listado de Clientes
-Clientes.Listado de Clientes.Editar Cliente
-Clientes.Lista Negra
-Clientes.Tipo de Cliente
+Clientes.Datos de Clientes
+Clientes.Areas Ocupadas Bodega
+Clientes.Reglas de Cobro
+Clientes.Horas Extra
+Clientes.Subservicios Utilizados
+Compras
+Compras.Factura Proveedores
 Ventas
-Ventas.Contratos
-Ventas.Cotizacion
-Ventas.Facturacion Contado
-Ventas.Consultar Cuentas
+Ventas.Cotizaciones
+Ventas.Factura Proforma
+Ventas.Factura
+Ventas.Nota de Debito
+Ventas.Nota de Credito
+RRHH
+RRHH.Departamento
+RRHH.Empleados
+RRHH.Tipo de Planilla
+RRHH.Horas Trabajadas
+RRHH.Planilla de Sueldos
+RRHH.Control Asistencias
+RRHH.Reportes
+RRHH.Puestos
+RRHH.Tipo Contrato
+RRHH.Concepto
+RRHH.Formulas
+RRHH.Formulas.Formula
+RRHH.Formulas.Formulas Concepto
+RRHH.Formulas.Formulas con Formulas
+RRHH.Formulas.Formulas Aplicadas
 Proveedores
 Proveedores.Proveedores
 Proveedores.Tipo Proveedores
+Proveedores.Configuracion de Proveedores
+Proveedores.Listas de Costos
 Seguridad
 Seguridad.Listar Permisos
 Seguridad.Modificar Permisos Rol
@@ -47,10 +130,3 @@ Seguridad.Iniciar Sesion
 Seguridad.Usuarios
 Seguridad.Roles
 Seguridad.Roles por Usuario
-Empleados
-Empleados.Empleados
-Empleados.Departamentos
-Gastos
-Gastos.Tipos de Gastos
-Gastos.Registro de Gastos
-Reportes
