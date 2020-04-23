@@ -55,7 +55,7 @@ namespace ERP.Contexts
 
 
 
-        public DbSet<ERPMVC.Models.Contrato> Contrato { get; set; }
+        
 
 
 

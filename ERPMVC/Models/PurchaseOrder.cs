@@ -32,7 +32,7 @@ namespace ERPMVC.Models
 
         public int? VendorId { get; set; }
         [ForeignKey("VendorId")]
-        public Vendor Vendor { get; set; }
+       // public Vendor Vendor { get; set; }
 
         public string VendorName { get; set; }
 
