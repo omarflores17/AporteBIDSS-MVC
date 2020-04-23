@@ -17,17 +17,12 @@
                                 <li permiso="Administracion.Parametros.Grupos"><a asp-action="GrupoList" asp-controller="Grupos"> Grupos</a></li>
                                 <li permiso="Administracion.Parametros.Marcas"><a asp-action="MarcasList" asp-controller="Marcas"> Marcas</a></li>
                                 <li permiso="Administracion.Parametros.Puesto"><a asp-action="Puesto" asp-controller="Puesto">  Puesto</a></li>
-                                <li permiso="Administracion.Parametros.Ciudades"><a asp-action="City" asp-controller="City">@*<i class="fa fa-building"></i>*@ Ciudades</a></li>
+                                <li permiso="Administracion.Parametros.Ciudades"><a asp-action="City" asp-controller="City"> Ciudades</a></li>
                                 <li permiso="Administracion.Parametros.Departamentos"><a asp-action="State" asp-controller="State">Departamentos</a></li>
                                 <li permiso="Administracion.Parametros.Impuestos"><a asp-action="Tax" asp-controller="Tax"><i class="fa fa-file-alt"></i> Impuestos</a></li>
                                 <li permiso="Administracion.Parametros.Configuracion Intereses"><a asp-action="Index" asp-controller="GrupoConfiguracionIntereses">Grupo configuracion de intereses</a></li>
                                 <li permiso="Administracion.Parametros.Configuracion Intereses"><a asp-action="Index" asp-controller="MotivosAjuste">Motivos de Ajuste de kardex</a></li>
                                 <li permiso="Administracion.Parametros.Tasa de Interes"><a asp-action="Index" asp-controller="FundingInterestRate"><i class="fa fa-file-alt"></i> Tasa de interés</a></li>
-                                <li permiso="Administracion.Parametros.Reglas de Mora"><a asp-action="Moras" asp-controller="Moras"> Reglas de Mora</a></li>
-                                @*<li><a asp-action="Index" asp-controller="CAI"><i class="fa fa-question-square"></i> CAI</a></li>
-        <li><a asp-action="Index" asp-controller="PuntoEmision"><i class="fa fa-map-marker-exclamation"></i> Puntos Emisión</a></li>
-        <li><a asp-action="TiposDocumento" asp-controller="TiposDocumento"><i class="fa fa-file-alt"></i> Tipos de documentos</a></li>
-        <li><a asp-action="NumeracionSAR" asp-controller="NumeracionSAR"><i class="fa fa-sort-numeric-down"></i> Numeración SAR</a></li>*@
                                 <li permiso="Administracion.Parametros.CAI"><a asp-action="Index" asp-controller="CAI"><i class="fa fa-question-square"></i> CAI</a></li>
                                 <li permiso="Administracion.Parametros.Puntos Emision"><a asp-action="Index" asp-controller="PuntoEmision"><i class="fa fa-map-marker-exclamation"></i> Puntos Emisión</a></li>
                                 <li permiso="Administracion.Parametros.Tipos de Documentos"><a asp-action="TiposDocumento" asp-controller="TiposDocumento"><i class="fa fa-file-alt"></i> Tipos de documentos</a></li>
@@ -75,8 +70,7 @@
                     <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="mdi mdi-account-multiple"></i><span class="hide-menu">Clientes</span></a>
                     <ul aria-expanded="false" class="collapse">
                         <li permiso="Clientes.Listado de Clientes"><a asp-action="Index" asp-controller="Customer"> Listado de Clientes</a></li>
-                        <li permiso="Clientes.Lista Negra"><a asp-action="BlackListCustomers" asp-controller="BlackListCustomers"><i class="fa fa-users-cog"></i> Lista Negra </a></li>
-                        <li permiso="Clientes.Tipo de Cliente"><a asp-action="CustomerTypeList" asp-controller="CustomerType">@*<i class="fa fa-text-width"></i>*@ Tipo de Cliente</a></li>
+                        <li permiso="Clientes.Tipo de Cliente"><a asp-action="CustomerTypeList" asp-controller="CustomerType">Tipo de Cliente</a></li>
 
                     </ul>
                 </li>
@@ -84,24 +78,17 @@
 
                     <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="mdi mdi-cash"></i><span class="hide-menu">Facturación/Ventas</span></a>
                     <ul aria-expanded="false" class="collapse">
-
-                        <li permiso="Ventas.Contratos"><a asp-action="Index" asp-controller="Contrato"> Contratos</a></li>
-
-                        <li permiso="Ventas.Cotizacion"><a asp-action="Details" asp-controller="SalesOrder"><i class="fa fa-file-alt"></i> Cotización</a></li>
-
                         <li permiso="Ventas.Facturacion Contado"><a asp-action="Index" asp-controller="ProformaInvoice"><i class="fa fa-file-alt"></i>Facturación Contado</a></li>
-                        <li permiso="Ventas.Consultar Cuentas"><a asp-action="Consulta_General_Cuentas_Details" asp-controller="Contrato"><i class="fa fa-file-alt"></i>Consultar Cuentas</a></li>
-                        
                     </ul>
                 </li>
 
-                <li permiso="Proveedores">
+                @*<li permiso="Proveedores">
                     <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="mdi mdi-cart"></i><span class="hide-menu">Proveedores</span></a>
                     <ul aria-expanded="false" class="collapse">
                         <li permiso="Proveedores.Proveedores"><a asp-action="Index" asp-controller="Vendor"> Proveedores</a></li>
                         <li permiso="Proveedores.Tipo Proveedores"><a asp-action="VendorTypeList" asp-controller="VendorType"><i class="fa fa-dolly-flatbed"></i>Tipo de Proveedores</a></li>
                     </ul>
-                </li>
+                </li>*@
                 <li permiso ="Seguridad">
                     <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="mdi mdi-security"></i><span class="hide-menu">Seguridad</span></a>
                     <ul aria-expanded="false" class="collapse">
@@ -126,22 +113,9 @@
                         <li permiso="Gastos.Tipos de Gastos"><a asp-action="Index" asp-controller="TipoGastos">Tipos de gastos</a></li>
                         <li permiso="Gastos.Registro de Gastos"><a asp-action="Index" asp-controller="RegistroGastos">Registro de gastos</a></li>
                     </ul>
-
                 </li>
-                <li permiso="Reportes">
-                    <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="mdi mdi-file-document"></i><span class="hide-menu"> Reportes</span></a>
-                    <ul aria-expanded="false" class="collapse"> 
-                        <li><a asp-action="Reporte_Mora_TiendaDetails" asp-controller="Contrato">Reporte de Mora por Tienda</a></li>
-                        <li><a asp-action="SFContratoPorSucursal" asp-controller="Contrato"> Contratos Por Sucursal</a></li>
-                    </ul>
-                </li>
-
-
-
 
             </ul>
         </nav>
-
     </div>
-    <!-- End Sidebar scroll-->
 </aside>
